@@ -22,7 +22,7 @@ services:
   nginx:
     image: nginx:alpine
     ports:
-      - "8080:80"
+      - "0.0.0.0:8080:80"
     volumes:
       - ./public:/var/www/public
       - ./docker/nginx/conf.d:/etc/nginx/conf.d
