@@ -5,8 +5,15 @@ services:
       dockerfile: Dockerfile
     working_dir: /var/www
     volumes:
-      - ./:/var/www
+      - ./app:/var/www/app
+      - ./bootstrap:/var/www/bootstrap
+      - ./config:/var/www/config
       - ./database:/var/www/database
+      - ./public:/var/www/public
+      - ./resources:/var/www/resources
+      - ./routes:/var/www/routes
+      - ./storage:/var/www/storage
+      - ./vendor:/var/www/vendor
     depends_on:
       - db
     networks:
@@ -17,7 +24,7 @@ services:
     ports:
       - "8080:80"
     volumes:
-      - ./:/var/www
+      - ./public:/var/www/public
       - ./docker/nginx/conf.d:/etc/nginx/conf.d
     depends_on:
       - php
