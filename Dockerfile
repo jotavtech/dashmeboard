@@ -26,8 +26,8 @@ COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 # Definir diretório de trabalho
 WORKDIR /var/www
 
-# Copiar apenas o conteúdo do diretório todo-app
-COPY todo-app/ /var/www/
+# Copiar arquivos da aplicação Laravel
+COPY . /var/www/
 
 # Instalar dependências do Composer
 RUN composer install --no-dev --optimize-autoloader

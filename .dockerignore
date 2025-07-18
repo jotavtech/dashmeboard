@@ -1,9 +1,47 @@
-node_modules
-vendor
+# Git
 .git
 .gitignore
-README.md
-.env
-docker-compose.yml
+
+# Docker
 Dockerfile
-.dockerignore 
+docker-compose.yml
+.dockerignore
+
+# Node modules (if any)
+node_modules
+npm-debug.log
+yarn-error.log
+
+# IDE
+.vscode
+.idea
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+storage/logs/*
+
+# Cache
+storage/framework/cache/*
+storage/framework/sessions/*
+storage/framework/views/*
+bootstrap/cache/*
+
+# Environment files (will be created during build)
+.env
+.env.local
+.env.production
+
+# Database files (will be mounted as volumes)
+database/*.sqlite
+database/*.sqlite.backup
+
+# Documentation
+README.md
+DEPLOY.md
+DEPLOY_VULTR.md 
