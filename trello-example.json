@@ -1,0 +1,112 @@
+{
+  "id": "5e7c1b2a3f4d5e6f7g8h9i0j",
+  "name": "Projeto DashMEBoard - Desenvolvimento",
+  "desc": "Board para gerenciar o desenvolvimento do sistema DashMEBoard",
+  "url": "https://trello.com/b/example",
+  "lists": [
+    {
+      "id": "list1",
+      "name": "📋 To Do",
+      "pos": 1,
+      "closed": false
+    },
+    {
+      "id": "list2", 
+      "name": "🔄 Em Andamento",
+      "pos": 2,
+      "closed": false
+    },
+    {
+      "id": "list3",
+      "name": "✅ Done",
+      "pos": 3,
+      "closed": false
+    }
+  ],
+  "cards": [
+    {
+      "id": "card1",
+      "name": "Implementar sistema de autenticação",
+      "desc": "Criar sistema completo de login, registro e recuperação de senha com validação de email",
+      "idList": "list1",
+      "due": "2025-08-15T10:00:00.000Z",
+      "closed": false,
+      "labels": [
+        {
+          "id": "label1",
+          "name": "High Priority",
+          "color": "red"
+        }
+      ]
+    },
+    {
+      "id": "card2",
+      "name": "Dashboard principal com estatísticas",
+      "desc": "Interface principal mostrando métricas e gráficos de atividades do usuário",
+      "idList": "list2",
+      "due": "2025-08-20T15:30:00.000Z", 
+      "closed": false,
+      "labels": [
+        {
+          "id": "label2",
+          "name": "Medium",
+          "color": "yellow"
+        }
+      ]
+    },
+    {
+      "id": "card3",
+      "name": "Testes unitários completos",
+      "desc": "Implementar testes para todas as funcionalidades principais",
+      "idList": "list1",
+      "due": null,
+      "closed": false,
+      "labels": [
+        {
+          "id": "label3",
+          "name": "Low Priority",
+          "color": "green"
+        }
+      ]
+    },
+    {
+      "id": "card4",
+      "name": "Sistema de notificações push",
+      "desc": "Notificações em tempo real para atividades e prazos",
+      "idList": "list3", 
+      "due": "2025-07-10T09:00:00.000Z",
+      "closed": false,
+      "labels": [
+        {
+          "id": "label4",
+          "name": "Feature",
+          "color": "blue"
+        }
+      ]
+    },
+    {
+      "id": "card5",
+      "name": "Documentação da API",
+      "desc": "Documentar todos os endpoints da API REST",
+      "idList": "list1",
+      "due": "2025-09-01T12:00:00.000Z",
+      "closed": false,
+      "labels": [
+        {
+          "id": "label5",
+          "name": "Documentation",
+          "color": "blue"
+        }
+      ]
+    },
+    {
+      "id": "card6",
+      "name": "Card arquivado - ignorar",
+      "desc": "Este card foi arquivado e não deve ser importado",
+      "idList": "list1",
+      "due": null,
+      "closed": true,
+      "labels": []
+    }
+  ]
+} 

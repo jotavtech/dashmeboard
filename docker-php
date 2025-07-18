@@ -1,0 +1,12 @@
+#!/bin/bash
+
+# Script para executar comandos PHP dentro do container Docker
+# Uso: ./docker-php artisan migrate
+
+if [ $# -eq 0 ]; then
+    echo "Uso: $0 <comando>"
+    echo "Exemplo: $0 artisan migrate"
+    exit 1
+fi
+
+docker-compose exec app php "$@" 

@@ -1,0 +1,57 @@
+services:
+  - type: web
+    name: todo-app
+    env: docker
+    plan: free
+    dockerfilePath: ./todo-app/Dockerfile
+    envVars:
+      - key: APP_NAME
+        value: TodoApp
+      - key: APP_ENV
+        value: production
+      - key: APP_DEBUG
+        value: false
+      - key: APP_URL
+        sync: false
+      - key: APP_KEY
+        generateValue: true
+      - key: DB_CONNECTION
+        value: mysql
+      - key: DB_HOST
+        fromDatabase:
+          name: todo-mariadb
+          property: host
+      - key: DB_PORT
+        fromDatabase:
+          name: todo-mariadb
+          property: port
+      - key: DB_DATABASE
+        fromDatabase:
+          name: todo-mariadb
+          property: database
+      - key: DB_USERNAME
+        fromDatabase:
+          name: todo-mariadb
+          property: user
+      - key: DB_PASSWORD
+        fromDatabase:
+          name: todo-mariadb
+          property: password
+      - key: SESSION_DRIVER
+        value: database
+      - key: CACHE_STORE
+        value: database
+      - key: QUEUE_CONNECTION
+        value: database
+      - key: LOG_CHANNEL
+        value: stack
+      - key: LOG_LEVEL
+        value: error
+      - key: BCRYPT_ROUNDS
+        value: 12
+
+databases:
+  - name: todo-mariadb
+    databaseName: todoapp
+    user: todouser
+    plan: free 

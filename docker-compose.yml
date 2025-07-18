@@ -1,0 +1,48 @@
+services:
+  php:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    working_dir: /var/www
+    volumes:
+      - ./:/var/www
+      - ./database:/var/www/database
+    depends_on:
+      - db
+    networks:
+      - todo-network
+
+  nginx:
+    image: nginx:alpine
+    ports:
+      - "8080:80"
+    volumes:
+      - ./:/var/www
+      - ./docker/nginx/conf.d:/etc/nginx/conf.d
+    depends_on:
+      - php
+    networks:
+      - todo-network
+
+  db:
+    image: mariadb:latest
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpass
+      MYSQL_DATABASE: todoapp
+      MYSQL_USER: todouser
+      MYSQL_PASSWORD: todopass
+    volumes:
+      - db_data:/var/lib/mariadb/data
+    ports:
+      - "13306:3306"
+    networks:
+      - todo-network
+
+volumes:
+  db_data:
+    driver: local
+
+networks:
+  todo-network:
+    driver: bridge 
