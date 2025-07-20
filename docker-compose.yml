@@ -14,6 +14,7 @@ services:
       - ./routes:/var/www/routes
       - ./storage:/var/www/storage
       - ./vendor:/var/www/vendor
+      - ./.env:/var/www/.env
     depends_on:
       - db
     networks:
