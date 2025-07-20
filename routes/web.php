@@ -3,6 +3,8 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AtividadeController;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\MessageController;
 
 /**
  * Rotas Web
@@ -50,6 +52,22 @@ Route::middleware('auth')->group(function () {
     Route::get('/atividades', function () {
         return view('atividades.index');
     })->name('atividades');
+
+    // Rotas de Perfis
+    Route::get('/profiles', [ProfileController::class, 'index'])->name('profiles.index');
+    Route::get('/profiles/search', [ProfileController::class, 'search'])->name('profiles.search');
+    Route::get('/profiles/my-profile', [ProfileController::class, 'myProfile'])->name('profiles.my-profile');
+    Route::get('/profiles/edit', [ProfileController::class, 'edit'])->name('profiles.edit');
+    Route::post('/profiles/update', [ProfileController::class, 'update'])->name('profiles.update');
+    Route::get('/profiles/{username}', [ProfileController::class, 'show'])->name('profiles.show');
+
+    // Rotas de Mensagens
+    Route::get('/messages', [MessageController::class, 'index'])->name('messages.index');
+    Route::get('/messages/create/{username?}', [MessageController::class, 'create'])->name('messages.create');
+    Route::post('/messages', [MessageController::class, 'store'])->name('messages.store');
+    Route::get('/messages/{id}', [MessageController::class, 'show'])->name('messages.show');
+    Route::get('/messages/conversation/{username}', [MessageController::class, 'conversation'])->name('messages.conversation');
+    Route::get('/messages/unread/count', [MessageController::class, 'unreadCount'])->name('messages.unread-count');
 });
 
 // Test routes (mantendo para desenvolvimento)
