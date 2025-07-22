@@ -4,8 +4,6 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    ports:
-      - "9000:9000"
     working_dir: /var/www
     volumes:
       - ./composer.json:/var/www/composer.json
