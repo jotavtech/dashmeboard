@@ -86,17 +86,16 @@ class AuthController extends Controller
     public function dashboard()
     {
         $user = Auth::user();
-        
-        // Buscar dados do usuário logado
-        $atividadesCount = $user->atividades()->count();
-        
-        // Buscar atividades recentes
-        $atividades = $user->atividades()->latest()->take(5)->get();
-        
-        // Para compatibilidade com a view, criamos collections vazias
+        if (!$user) {
+            return redirect('/login');
+        }
+
+        // Buscar todas as atividades do usuário logado
+        $atividades = method_exists($user, 'atividades') ? $user->atividades()->latest()->get() : collect();
+        $atividadesCount = $atividades->count();
         $todos = collect();
         $projects = collect();
-        
+
         return view("dashboard", compact("user", "atividades", "atividadesCount", "todos", "projects"));
     }
 

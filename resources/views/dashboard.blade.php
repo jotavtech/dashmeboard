@@ -1,62 +1,8 @@
-<!DOCTYPE html>
-<html lang="pt-BR">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard - DashMEBoard</title>
-    
-    <!-- Favicon Neon -->
-    <link rel="icon" type="image/png" href="{{ asset('favicon.png') }}">
-    <link rel="shortcut icon" type="image/png" href="{{ asset('favicon.png') }}">
-    <link rel="apple-touch-icon" href="{{ asset('favicon.png') }}">
-    
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-    <link href="{{ asset('css/glassmorphism.css') }}" rel="stylesheet">
-</head>
-<body class="dashboard-background">
-    <!-- Navbar -->
-    <nav class="navbar navbar-expand-lg glass-navbar">
-        <div class="container">
-            <a class="navbar-brand" href="{{ route('dashboard') }}">
-                <i class="fas fa-tasks me-2 glass-icon"></i>DashMEBoard
-            </a>
-            
-            <div class="d-flex align-items-center ms-auto">
-                <!-- Barrinha única - Menu dropdown -->
-                <div class="animated-bars">
-                    <div class="animated-bar" onclick="toggleDropdownMenu()">
-                        <div class="bar-line"></div>
-                        <div class="bar-line"></div>
-                    </div>
-                </div>
-                
-                <!-- Menu do usuário -->
-                <div class="navbar-nav ms-3">
-                    <div class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown">
-                            <i class="fas fa-user me-1 glass-icon"></i>{{ $user->name }}
-                        </a>
-                        <ul class="dropdown-menu">
-                            <li><a class="dropdown-item" href="{{ route('profile') }}">
-                                <i class="fas fa-user-edit me-2"></i>Perfil
-                            </a></li>
-                            <li><hr class="dropdown-divider"></li>
-                            <li>
-                                <form method="POST" action="{{ route('logout') }}" class="d-inline">
-                                    @csrf
-                                    <button type="submit" class="dropdown-item">
-                                        <i class="fas fa-sign-out-alt me-2"></i>Sair
-                                    </button>
-                                </form>
-                            </li>
-                        </ul>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </nav>
+@extends('layouts.app')
 
+@section('title', 'Dashboard - DashMEBoard')
+
+@section('content')
     <!-- Fullscreen Menu -->
     <div class="dropdown-menu-overlay" id="dropdownMenuOverlay">
         <div class="dropdown-menu-content">
@@ -105,11 +51,19 @@
                             </div>
                         </a>
                         
-                        <a href="{{ route('profile') }}" class="nav-link-item">
+                        <a href="{{ route('profiles.my-profile') }}" class="nav-link-item">
                             <i class="fas fa-user" style="color: #10b981;"></i>
                             <div class="nav-link-content">
                                 <div class="nav-link-title">Meu Perfil</div>
                                 <div class="nav-link-description">Configurações e estatísticas</div>
+                            </div>
+                        </a>
+                        
+                        <a href="{{ route('fortune-cookie') }}" class="nav-link-item">
+                            <i class="fas fa-cookie-bite" style="color: #ffd700;"></i>
+                            <div class="nav-link-content">
+                                <div class="nav-link-title">Biscoito da Sorte</div>
+                                <div class="nav-link-description">Quebre o biscoito e escolha seu fundo</div>
                             </div>
                         </a>
                     </div>
@@ -144,6 +98,7 @@
                     <div class="menu-section-links">
                         <a href="#nova-atividade" class="menu-section-link">➕ Nova Atividade</a>
                         <a href="#novo-projeto" class="menu-section-link">📁 Novo Projeto</a>
+                        <a href="{{ route('fortune-cookie') }}" class="menu-section-link">🍪 Biscoito da Sorte</a>
                         <a href="#buscar" class="menu-section-link">🔍 Buscar</a>
                         <a href="#filtros" class="menu-section-link">🎛️ Filtros</a>
                     </div>
@@ -153,7 +108,7 @@
                 <div class="menu-section">
                     <h3>⚙️ Configurações</h3>
                     <div class="menu-section-links">
-                        <a href="{{ route('profile') }}" class="menu-section-link">👤 Perfil</a>
+                        <a href="{{ route('profiles.my-profile') }}" class="menu-section-link">👤 Perfil</a>
                         <a href="#preferencias" class="menu-section-link">🎨 Preferências</a>
                         <a href="#notificacoes" class="menu-section-link">🔔 Notificações</a>
                         <a href="#ajuda" class="menu-section-link">❓ Ajuda</a>
@@ -242,6 +197,38 @@
                         </div>
                         <div class="align-self-center">
                             <i class="fas fa-check-circle fa-2x" style="color: #10b981; opacity: 0.8;"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Biscoito da Sorte (Uma vez por dia) -->
+        <div class="fortune-cookie-dashboard-section mb-5" id="fortuneCookieSection" style="display: none;">
+            <div class="section-title">
+                <div class="section-icon">🍪</div>
+                <h2 class="glass-text mb-0">Biscoito da Sorte do Dia</h2>
+            </div>
+            <div class="grid-large">
+                <div class="section-card fortune-cookie-card">
+                    <div class="text-center">
+                        <div class="fortune-cookie-icon mb-3">
+                            <i class="fas fa-cookie-bite fa-4x" style="color: #ffd700; text-shadow: 0 0 20px rgba(255, 215, 0, 0.5);"></i>
+                        </div>
+                        <h4 class="glass-text mb-3">Quebre o biscoito e descubra sua sorte!</h4>
+                        <p class="glass-text-muted mb-4">Receba uma mensagem inspiradora e personalize seu perfil.</p>
+                        <div class="fortune-message-preview mb-3" id="fortuneMessagePreview" style="display: none;">
+                            <div class="glass-card p-3">
+                                <p class="glass-text mb-2 fst-italic" id="previewMessage"></p>
+                            </div>
+                        </div>
+                        <div class="btn-group">
+                            <button class="btn btn-glass-fortune me-2" id="breakCookieBtn">
+                                <i class="fas fa-cookie-bite me-2"></i>Quebrar Biscoito
+                            </button>
+                            <a href="{{ route('profiles.my-profile') }}" class="btn btn-glass-secondary" id="goToProfileBtn" style="display: none;">
+                                <i class="fas fa-user me-2"></i>Ver Meu Perfil
+                            </a>
                         </div>
                     </div>
                 </div>
@@ -543,7 +530,7 @@
                                     <a href="{{ route('dashboard') }}" class="footer-link">
                                         <i class="fas fa-home me-1"></i>Dashboard
                                     </a>
-                                    <a href="{{ route('profile') }}" class="footer-link">
+                                    <a href="{{ route('profiles.my-profile') }}" class="footer-link">
                                         <i class="fas fa-user me-1"></i>Perfil
                                     </a>
                                 </div>
@@ -565,10 +552,10 @@
         </div>
         </div> <!-- Fim do main-content-card -->
     </div>
+@endsection
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    
-    <script>
+@section('scripts')
+<script>
         // Função para atualizar o relógio em tempo real
         function updateClock() {
             const now = new Date();
@@ -1097,9 +1084,6 @@
             console.log('🎨 Background abstrato carregado');
             console.log('⏰ Sistema de relógio ativado');
             console.log('📁 Sistema de projetos com upload JSON ativado');
-            
-            // Mostrar exemplo de JSON no console
-            showJsonExample();
         }
         
         // Inicializar o dashboard
@@ -1189,6 +1173,97 @@
                 }
             });
         });
+
+        // Sistema do Biscoito da Sorte (Uma vez por dia)
+        function initFortuneCookie() {
+            const today = new Date().toDateString();
+            const lastCookieDate = localStorage.getItem('lastFortuneCookieDate');
+            const fortuneCookieSection = document.getElementById('fortuneCookieSection');
+            const breakCookieBtn = document.getElementById('breakCookieBtn');
+            const fortuneMessagePreview = document.getElementById('fortuneMessagePreview');
+            const previewMessage = document.getElementById('previewMessage');
+            const goToProfileBtn = document.getElementById('goToProfileBtn');
+
+            // Mensagens de biscoito da sorte
+            const fortuneMessages = [
+                'O código que você escreve hoje será a base do futuro de amanhã. Continue programando com paixão! 💻✨',
+                'A criatividade é infinita. Deixe sua imaginação voar e transforme ideias em realidade! 🎨🚀',
+                'O sucesso não é acidente. É resultado de trabalho duro, persistência e determinação. Continue firme! 💪🔥',
+                'A mente é como um jardim. Plante pensamentos positivos e colha felicidade! 🌱🧠',
+                'A música é a linguagem universal da alma. Deixe suas emoções fluírem através das notas! 🎼🎵',
+                'A paz interior é o maior tesouro. Respire fundo e encontre sua serenidade! 🧘‍♀️🌿',
+                'Os dados não mentem. Use-os com sabedoria para criar um futuro melhor! 📈🧠',
+                'A arte é a expressão mais pura da alma. Deixe sua criatividade brilhar! ✨🎨',
+                'Seu corpo pode fazer qualquer coisa. É sua mente que você precisa convencer! 💪🔥',
+                'A autenticidade é sua maior força. Seja você mesmo e inspire outros! 🌟📸',
+                'A tecnologia é a ponte entre o sonho e a realidade. Continue construindo! 🌉💡',
+                'Cada linha de código é uma oportunidade de criar algo incrível. Não desista! 🚀💻',
+                'A inovação nasce da curiosidade. Continue explorando e descobrindo! 🔍💭',
+                'O conhecimento é o investimento que sempre retorna dividendos. Continue aprendendo! 📚🎓',
+                'A colaboração multiplica o sucesso. Conecte-se e cresça junto! 🤝🌟'
+            ];
+
+            // Mostrar biscoito apenas se não foi quebrado hoje
+            if (lastCookieDate !== today) {
+                fortuneCookieSection.style.display = 'block';
+                
+                // Animação de entrada
+                fortuneCookieSection.style.opacity = '0';
+                fortuneCookieSection.style.transform = 'translateY(20px)';
+                setTimeout(() => {
+                    fortuneCookieSection.style.transition = 'all 0.5s ease';
+                    fortuneCookieSection.style.opacity = '1';
+                    fortuneCookieSection.style.transform = 'translateY(0)';
+                }, 100);
+            }
+
+            // Evento de quebrar o biscoito
+            if (breakCookieBtn) {
+                breakCookieBtn.addEventListener('click', function() {
+                    // Animação de quebra
+                    this.style.transform = 'scale(0.8) rotate(5deg)';
+                    this.style.opacity = '0.5';
+                    
+                    setTimeout(() => {
+                        // Selecionar mensagem aleatória
+                        const randomMessage = fortuneMessages[Math.floor(Math.random() * fortuneMessages.length)];
+                        
+                        // Salvar mensagem no localStorage para usar no perfil
+                        localStorage.setItem('todayFortuneMessage', randomMessage);
+                        localStorage.setItem('lastFortuneCookieDate', today);
+                        
+                        // Mostrar mensagem
+                        previewMessage.textContent = randomMessage;
+                        fortuneMessagePreview.style.display = 'block';
+                        fortuneMessagePreview.style.opacity = '0';
+                        fortuneMessagePreview.style.transform = 'translateY(20px)';
+                        
+                        setTimeout(() => {
+                            fortuneMessagePreview.style.transition = 'all 0.5s ease';
+                            fortuneMessagePreview.style.opacity = '1';
+                            fortuneMessagePreview.style.transform = 'translateY(0)';
+                        }, 100);
+                        
+                        // Esconder botão de quebrar e mostrar botão de ir ao perfil
+                        this.style.display = 'none';
+                        goToProfileBtn.style.display = 'inline-block';
+                        
+                        // Esconder seção após 5 segundos
+                        setTimeout(() => {
+                            fortuneCookieSection.style.transition = 'all 0.5s ease';
+                            fortuneCookieSection.style.opacity = '0';
+                            fortuneCookieSection.style.transform = 'translateY(-20px)';
+                            setTimeout(() => {
+                                fortuneCookieSection.style.display = 'none';
+                            }, 500);
+                        }, 5000);
+                        
+                    }, 300);
+                });
+            }
+        }
+
+        // Inicializar biscoito da sorte
+        initFortuneCookie();
     </script>
-</body>
-</html> 
+@endsection 

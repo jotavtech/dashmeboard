@@ -11,9 +11,8 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('categories', function (Blueprint $table) {
-            $table->id();
-            $table->timestamps();
+        Schema::table('profiles', function (Blueprint $table) {
+            $table->string('background_image_url')->nullable()->after('background_image');
         });
     }
 
@@ -22,6 +21,8 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('categories');
+        Schema::table('profiles', function (Blueprint $table) {
+            $table->dropColumn('background_image_url');
+        });
     }
-};
+}; 

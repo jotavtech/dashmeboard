@@ -34,8 +34,10 @@ class AtividadeController extends Controller
             'descricao' => 'nullable|string',
             'status' => 'required|in:pendente,em_andamento,concluida',
             'prioridade' => 'required|in:baixa,media,alta',
-            'data_limite' => 'nullable|date',
-            'categoria' => 'nullable|string|max:255', // Para compatibilidade com import JSON
+            'data_inicio' => 'nullable|date',
+            'data_fim' => 'nullable|date',
+            'progresso' => 'nullable|integer|min:0|max:100',
+            'categoria_id' => 'nullable|integer|exists:categories,id',
         ]);
 
         // Extrair apenas os campos que existem na tabela
@@ -44,7 +46,10 @@ class AtividadeController extends Controller
             'descricao' => $request->descricao,
             'status' => $request->status,
             'prioridade' => $request->prioridade,
-            'data_limite' => $request->data_limite,
+            'data_inicio' => $request->data_inicio,
+            'data_fim' => $request->data_fim,
+            'progresso' => $request->progresso ? (int)$request->progresso : 0,
+            'categoria_id' => $request->categoria_id ? (int)$request->categoria_id : null,
             'user_id' => Auth::id()
         ];
 
@@ -53,7 +58,7 @@ class AtividadeController extends Controller
         return response()->json([
             'success' => true,
             'message' => 'Atividade criada com sucesso!',
-            'data' => $atividade
+            'atividade' => $atividade
         ], 201);
     }
 

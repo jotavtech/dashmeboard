@@ -12,22 +12,66 @@ class Atividade extends Model
     protected $table = 'atividades';
 
     protected $fillable = [
+        'user_id',
         'titulo',
+        'categoria_id',
+        'tags',
         'descricao',
         'status',
+        'data_inicio',
+        'data_fim',
         'prioridade',
-        'data_limite',
-        'user_id'
+        'tempo_estimado',
+        'tempo_real',
+        'progresso',
+        'local',
+        'url',
+        'notas',
+        'lembrete',
+        'repeticao',
+        'privada',
+        'favorita',
+        'cor',
+        'icone',
+        'meta',
+        'energia',
+        'urgencia',
+        'importancia',
     ];
 
     protected $casts = [
-        'data_limite' => 'date',
+        'data_inicio' => 'datetime',
+        'data_fim' => 'datetime',
+        'lembrete' => 'datetime',
+        'privada' => 'boolean',
+        'favorita' => 'boolean',
+        'tags' => 'array',
+        'tempo_estimado' => 'integer',
+        'tempo_real' => 'integer',
+        'progresso' => 'integer',
+        'energia' => 'integer',
+        'urgencia' => 'integer',
+        'importancia' => 'integer',
     ];
 
-    // Relacionamento com User
     public function user()
     {
         return $this->belongsTo(User::class);
+    }
+
+    public function category()
+    {
+        return $this->belongsTo(Category::class, 'categoria_id');
+    }
+
+    public function project()
+    {
+        return $this->belongsTo(Project::class, 'projeto_id');
+    }
+
+    public function tags()
+    {
+        return $this->belongsToMany(Tag::class, 'atividade_tag');
     }
 
     // Scopes para filtrar por status
