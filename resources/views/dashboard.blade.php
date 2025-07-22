@@ -1084,9 +1084,6 @@
             console.log('🎨 Background abstrato carregado');
             console.log('⏰ Sistema de relógio ativado');
             console.log('📁 Sistema de projetos com upload JSON ativado');
-            
-            // Mostrar exemplo de JSON no console
-            showJsonExample();
         }
         
         // Inicializar o dashboard

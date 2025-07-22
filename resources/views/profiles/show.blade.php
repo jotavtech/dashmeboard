@@ -5,7 +5,16 @@
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     // Salvar o plano de fundo atual do usuário
-    const userBackground = localStorage.getItem('userBackgroundImage');
+    const currentBackground = document.body.style.backgroundImage;
+    const currentBackgroundSize = document.body.style.backgroundSize;
+    const currentBackgroundPosition = document.body.style.backgroundPosition;
+    const currentBackgroundAttachment = document.body.style.backgroundAttachment;
+    
+    // Salvar no localStorage para restaurar depois
+    localStorage.setItem('userBackgroundImage', currentBackground);
+    localStorage.setItem('userBackgroundSize', currentBackgroundSize);
+    localStorage.setItem('userBackgroundPosition', currentBackgroundPosition);
+    localStorage.setItem('userBackgroundAttachment', currentBackgroundAttachment);
     
     // Aplicar o plano de fundo do perfil sendo visualizado
     const profileBackground = '{{ $profile->background_image_url }}';
@@ -14,24 +23,127 @@ document.addEventListener('DOMContentLoaded', function() {
         document.body.style.backgroundSize = 'cover';
         document.body.style.backgroundPosition = 'center';
         document.body.style.backgroundAttachment = 'fixed';
+        document.body.style.backgroundRepeat = 'no-repeat';
+        
+        // Adicionar classe para estilos específicos
+        document.body.classList.add('profile-background-active');
+        
+        // Adicionar overlay para melhorar legibilidade
+        if (!document.getElementById('profile-background-overlay')) {
+            const overlay = document.createElement('div');
+            overlay.id = 'profile-background-overlay';
+            overlay.style.cssText = `
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: rgba(0, 0, 0, 0.3);
+                z-index: -1;
+                pointer-events: none;
+            `;
+            document.body.appendChild(overlay);
+        }
     }
     
     // Restaurar o plano de fundo do usuário quando sair da página
     window.addEventListener('beforeunload', function() {
-        if (userBackground) {
-            document.body.style.backgroundImage = `url(${userBackground})`;
-            document.body.style.backgroundSize = 'cover';
-            document.body.style.backgroundPosition = 'center';
-            document.body.style.backgroundAttachment = 'fixed';
+        restoreUserBackground();
+    });
+    
+    // Também restaurar quando clicar em links de navegação
+    document.addEventListener('click', function(e) {
+        if (e.target.tagName === 'A' && !e.target.href.includes('{{ $profile->username }}')) {
+            restoreUserBackground();
         }
     });
+    
+    function restoreUserBackground() {
+        const savedBackground = localStorage.getItem('userBackgroundImage');
+        const savedSize = localStorage.getItem('userBackgroundSize');
+        const savedPosition = localStorage.getItem('userBackgroundPosition');
+        const savedAttachment = localStorage.getItem('userBackgroundAttachment');
+        
+        if (savedBackground) {
+            document.body.style.backgroundImage = savedBackground;
+            document.body.style.backgroundSize = savedSize || 'cover';
+            document.body.style.backgroundPosition = savedPosition || 'center';
+            document.body.style.backgroundAttachment = savedAttachment || 'fixed';
+        }
+        
+        // Remover classe CSS
+        document.body.classList.remove('profile-background-active');
+        
+        // Remover overlay
+        const overlay = document.getElementById('profile-background-overlay');
+        if (overlay) {
+            overlay.remove();
+        }
+    }
 });
 </script>
 @endif
+
+<style>
+/* Estilos específicos para quando o perfil tem imagem de fundo */
+.profile-background-active .glass-card {
+    background: rgba(255, 255, 255, 0.15) !important;
+    backdrop-filter: blur(30px) !important;
+    -webkit-backdrop-filter: blur(30px) !important;
+    border: 1px solid rgba(255, 255, 255, 0.3) !important;
+}
+
+.profile-background-active .glass-button {
+    background: rgba(255, 255, 255, 0.2) !important;
+    border: 1px solid rgba(255, 255, 255, 0.4) !important;
+}
+
+.profile-background-active .glass-button:hover {
+    background: rgba(255, 255, 255, 0.3) !important;
+    border-color: rgba(255, 255, 255, 0.6) !important;
+}
+
+.profile-background-active .glass-button-secondary {
+    background: rgba(255, 255, 255, 0.1) !important;
+    border: 1px solid rgba(255, 255, 255, 0.3) !important;
+}
+
+.profile-background-active .glass-button-secondary:hover {
+    background: rgba(255, 255, 255, 0.2) !important;
+    border-color: rgba(255, 255, 255, 0.5) !important;
+}
+
+.profile-background-active .glass-text {
+    color: rgba(255, 255, 255, 0.95) !important;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.profile-background-active .glass-text-muted {
+    color: rgba(255, 255, 255, 0.8) !important;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+}
+
+.profile-background-active .glass-badge {
+    background: rgba(255, 255, 255, 0.2) !important;
+    border: 1px solid rgba(255, 255, 255, 0.3) !important;
+    color: rgba(255, 255, 255, 0.9) !important;
+}
+</style>
+
 <div class="container my-4">
     <div class="row justify-content-center">
         <div class="col-lg-8">
             <!-- Cabeçalho do Perfil -->
+            @if($profile->background_image_url)
+            <div class="glass-card p-3 mb-3" style="background: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 255, 255, 0.2);">
+                <div class="d-flex align-items-center">
+                    <i class="fas fa-image me-2" style="color: rgba(255, 255, 255, 0.7);"></i>
+                    <small class="glass-text-muted mb-0">
+                        <i class="fas fa-eye me-1"></i>Visualizando o fundo personalizado de @{{ $profile->username }}
+                    </small>
+                </div>
+            </div>
+            @endif
             <div class="glass-card p-4 mb-4">
                 <div class="d-flex align-items-center mb-4">
                     @if($profile->profile_image)

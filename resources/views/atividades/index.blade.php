@@ -259,80 +259,134 @@
     </div>
 </div>
 
-<!-- Modal de Criação -->
-<div class="modal fade" id="createModal" tabindex="-1">
-    <div class="modal-dialog modal-lg">
-        <div class="modal-content glass-modal">
-            <div class="modal-header glass-modal-header">
-                <h5 class="modal-title">
-                    <i class="fas fa-plus me-2"></i>Nova Atividade
-                </h5>
-                <button type="button" class="btn-close glass-btn-close" data-bs-dismiss="modal"></button>
-            </div>
-            <div class="modal-body">
-                <form id="createForm">
-                    <div class="row g-3">
-                        <div class="col-12">
-                            <label class="form-label glass-text">Título</label>
-                            <input type="text" name="titulo" class="form-control glass-input" required>
+<!-- Overlay de Criação -->
+<div id="createOverlay" class="edit-overlay">
+    <div class="edit-overlay-background"></div>
+    <div class="edit-container">
+        <div class="edit-form-container">
+            <div class="edit-form-card">
+                <div class="edit-form-header">
+                    <h5 style="color: rgba(255, 255, 255, 0.9);"><i class="fas fa-plus me-2"></i>Nova Atividade</h5>
+                    <button class="edit-close-btn" onclick="closeCreateModal()">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                <div class="edit-form-body">
+                    <form id="createForm">
+                        <div class="row g-3">
+                            <div class="col-12">
+                                <label class="form-label glass-text">Título</label>
+                                <input type="text" name="titulo" class="form-control glass-input" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label glass-text">Status</label>
+                                <select name="status" class="form-select glass-input">
+                                    <option value="pendente">Pendente</option>
+                                    <option value="em_andamento">Em Andamento</option>
+                                    <option value="concluida">Concluída</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label glass-text">Prioridade</label>
+                                <select name="prioridade" class="form-select glass-input">
+                                    <option value="baixa">Baixa</option>
+                                    <option value="media">Média</option>
+                                    <option value="alta">Alta</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label glass-text">Data de Início</label>
+                                <input type="date" name="data_inicio" class="form-control glass-input">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label glass-text">Data de Conclusão</label>
+                                <input type="date" name="data_fim" class="form-control glass-input">
+                            </div>
+                            <div class="col-12">
+                                <label class="form-label glass-text">Descrição</label>
+                                <textarea name="descricao" class="form-control glass-input" rows="3"></textarea>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label glass-text">Progresso (%)</label>
+                                <input type="range" name="progresso" class="form-range" min="0" max="100" value="0">
+                                <div class="text-center">
+                                    <span id="createProgressoValue" class="glass-text">0%</span>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label glass-text">Categoria</label>
+                                <select name="categoria_id" class="form-select glass-input">
+                                    <option value="">Sem categoria</option>
+                                    <option value="1">Trabalho</option>
+                                    <option value="2">Estudos</option>
+                                    <option value="3">Pessoal</option>
+                                    <option value="4">Saúde</option>
+                                    <option value="5">Lazer</option>
+                                </select>
+                            </div>
                         </div>
-                        <div class="col-md-6">
-                            <label class="form-label glass-text">Status</label>
-                            <select name="status" class="form-select glass-input">
-                                <option value="pendente">Pendente</option>
-                                <option value="em_andamento">Em Andamento</option>
-                                <option value="concluida">Concluída</option>
-                            </select>
-                        </div>
-                        <div class="col-md-6">
-                            <label class="form-label glass-text">Prioridade</label>
-                            <select name="prioridade" class="form-select glass-input">
-                                <option value="baixa">Baixa</option>
-                                <option value="media">Média</option>
-                                <option value="alta">Alta</option>
-                            </select>
-                        </div>
-                        <div class="col-md-6">
-                            <label class="form-label glass-text">Data de Início</label>
-                            <input type="date" name="data_inicio" class="form-control glass-input">
-                        </div>
-                        <div class="col-md-6">
-                            <label class="form-label glass-text">Data de Conclusão</label>
-                            <input type="date" name="data_fim" class="form-control glass-input">
-                        </div>
-                        <div class="col-12">
-                            <label class="form-label glass-text">Descrição</label>
-                            <textarea name="descricao" class="form-control glass-input" rows="3"></textarea>
-                        </div>
-                        <div class="col-md-6">
-                            <label class="form-label glass-text">Progresso (%)</label>
-                            <input type="range" name="progresso" class="form-range" min="0" max="100" value="0">
-                        </div>
-                        <div class="col-md-6">
-                            <label class="form-label glass-text">Categoria</label>
-                            <select name="categoria_id" class="form-select glass-input">
-                                <option value="">Sem categoria</option>
-                                <option value="1">Trabalho</option>
-                                <option value="2">Estudos</option>
-                                <option value="3">Pessoal</option>
-                                <option value="4">Saúde</option>
-                                <option value="5">Lazer</option>
-                            </select>
-                        </div>
+                    </form>
+                </div>
+                <div class="edit-form-footer">
+                    <div class="edit-shortcuts">
+                        <small class="glass-text-muted">
+                            <kbd>Ctrl+S</kbd> Criar | <kbd>Esc</kbd> Cancelar
+                        </small>
                     </div>
-                </form>
-            </div>
-            <div class="modal-footer glass-modal-footer">
-                <button type="button" class="btn btn-glass-secondary" data-bs-dismiss="modal">
-                    <i class="fas fa-times me-2"></i>Cancelar
-                </button>
-                <button type="button" class="btn btn-glass" onclick="createAtividade()">
-                    <i class="fas fa-save me-2"></i>Criar Atividade
-                </button>
+                    <div class="edit-actions">
+                        <button class="btn btn-glass-secondary" onclick="closeCreateModal()">
+                            <i class="fas fa-times me-2"></i>Cancelar
+                        </button>
+                        <button class="btn btn-glass" onclick="createAtividade()">
+                            <i class="fas fa-plus me-2"></i>Criar Atividade
+                        </button>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
 </div>
+
+<style>
+/* Estilos específicos para o overlay de criação */
+#createOverlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 1050;
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+}
+
+#createOverlay.show {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+#createOverlay .edit-form-card {
+    animation: editFormEnter 0.4s ease-out forwards;
+}
+
+/* Animação de entrada para o formulário de criação */
+@keyframes createFormEnter {
+    0% {
+        opacity: 0;
+        transform: translateY(-30px) scale(0.95);
+    }
+    100% {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+#createOverlay.show .edit-form-card {
+    animation: createFormEnter 0.4s ease-out forwards;
+}
+</style>
 
 <script>
 // Inicialização segura das variáveis
@@ -942,11 +996,14 @@ function removeActivity(id) {
 
 // Funções de criação
 function openCreateModal() {
-    const modal = new bootstrap.Modal(document.getElementById('createModal'));
-    modal.show();
+    // Mostrar overlay
+    document.getElementById('createOverlay').classList.add('show');
     
     // Limpar formulário ao abrir
     document.getElementById('createForm').reset();
+    
+    // Resetar valor do progresso
+    document.getElementById('createProgressoValue').textContent = '0%';
     
     // Focar no primeiro campo
     setTimeout(() => {
@@ -954,7 +1011,32 @@ function openCreateModal() {
         if (tituloInput) {
             tituloInput.focus();
         }
-    }, 500);
+    }, 300);
+    
+    // Adicionar evento para range do progresso
+    const progressoRange = document.querySelector('#createForm input[name="progresso"]');
+    if (progressoRange) {
+        progressoRange.addEventListener('input', function() {
+            document.getElementById('createProgressoValue').textContent = this.value + '%';
+        });
+    }
+    
+    // Adicionar eventos de teclado
+    document.addEventListener('keydown', handleCreateKeyboard);
+}
+
+function closeCreateModal() {
+    document.getElementById('createOverlay').classList.remove('show');
+    document.removeEventListener('keydown', handleCreateKeyboard);
+}
+
+function handleCreateKeyboard(e) {
+    if (e.ctrlKey && e.key === 's') {
+        e.preventDefault();
+        createAtividade();
+    } else if (e.key === 'Escape') {
+        closeCreateModal();
+    }
 }
 
 function createAtividade() {
@@ -1014,11 +1096,8 @@ function createAtividade() {
             // Adicionar à lista
             atividades.push(data.atividade);
             
-            // Fechar modal
-            const modal = bootstrap.Modal.getInstance(document.getElementById('createModal'));
-            if (modal) {
-                modal.hide();
-            }
+            // Fechar overlay
+            closeCreateModal();
             
             // Limpar formulário
             document.getElementById('createForm').reset();
