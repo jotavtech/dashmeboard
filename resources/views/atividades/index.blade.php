@@ -1,1411 +1,1091 @@
-<!DOCTYPE html>
-<html lang="pt-BR">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>Atividades - DashMEBoard Neon</title>
-    
-    <!-- Favicon Neon -->
-    <link rel="icon" type="image/png" href="{{ asset('favicon.png') }}">
-    <link rel="shortcut icon" type="image/png" href="{{ asset('favicon.png') }}">
-    <link rel="apple-touch-icon" href="{{ asset('favicon.png') }}">
-    
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-    <link href="{{ asset('css/glassmorphism.css') }}" rel="stylesheet">
-</head>
-<body class="dashboard-background">
-    <!-- Navbar -->
-    <nav class="navbar navbar-expand-lg glass-navbar">
-        <div class="container">
-            <a class="navbar-brand" href="{{ route('dashboard') }}">
-                <i class="fas fa-tasks me-2 glass-icon"></i>DashMEBoard
-            </a>
-            
-            <div class="d-flex align-items-center ms-auto">
-                <!-- Barrinha única - Menu dropdown -->
-                <div class="animated-bars">
-                    <div class="animated-bar" onclick="toggleDropdownMenu()">
-                        <div class="bar-line"></div>
-                        <div class="bar-line"></div>
-                    </div>
-                </div>
-                
-                <!-- Menu do usuário -->
-                <div class="navbar-nav ms-3">
-                    <div class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown">
-                            <i class="fas fa-user me-1 glass-icon"></i>{{ Auth::user()->name }}
-                        </a>
-                        <ul class="dropdown-menu">
-                            <li><a class="dropdown-item" href="{{ route('dashboard') }}">
-                                <i class="fas fa-tachometer-alt me-2"></i>Dashboard
-                            </a></li>
-                            <li><a class="dropdown-item" href="{{ route('profile') }}">
-                                <i class="fas fa-user-edit me-2"></i>Perfil
-                            </a></li>
-                            <li><hr class="dropdown-divider"></li>
-                            <li>
-                                <form method="POST" action="{{ route('logout') }}" class="d-inline">
-                                    @csrf
-                                    <button type="submit" class="dropdown-item">
-                                        <i class="fas fa-sign-out-alt me-2"></i>Sair
-                                    </button>
-                                </form>
-                            </li>
-                        </ul>
-                    </div>
-                </div>
+@extends('layouts.app')
+
+@section('title', 'Atividades - DashMEBoard Neon')
+
+@section('content')
+<div class="container my-4 glass-container">
+    <div class="main-content-card">
+        <!-- Header -->
+        <div class="row mb-4">
+            <div class="col-md-8">
+                <h1 class="h3 glass-text mb-2">
+                    <i class="fas fa-tasks me-2"></i>Minhas Atividades
+                </h1>
+                <p class="glass-text-muted mb-0">Gerencie suas atividades e mantenha o controle dos seus projetos</p>
+            </div>
+            <div class="col-md-4 text-md-end">
+                <button class="btn btn-glass" onclick="openCreateModal()">
+                    <i class="fas fa-plus me-2"></i>Nova Atividade
+                </button>
             </div>
         </div>
-    </nav>
 
-    <!-- Fullscreen Menu -->
-    <div class="dropdown-menu-overlay" id="dropdownMenuOverlay">
-        <div class="dropdown-menu-content">
-            <div class="fullscreen-close-btn" onclick="closeDropdownMenu()"></div>
-            <div class="fullscreen-menu-layout">
-                <!-- Seção do Relógio Gigante -->
-                <div class="fullscreen-clock-section">
-                    <div class="giant-clock-label">Hora Atual</div>
-                    <div class="fullscreen-giant-clock" id="dropdownClock"></div>
-                    <div class="giant-clock-date" id="dropdownDate"></div>
-                </div>
-                
-                <!-- Seção dos Links de Navegação -->
-                <div class="fullscreen-navigation-section">
-                    <h2 class="navigation-title">Navegação</h2>
-                    <div class="navigation-links">
-                        <a href="{{ route('dashboard') }}" class="nav-link-item">
-                            <i class="fas fa-home" style="color: #06b6d4;"></i>
-                            <div class="nav-link-content">
-                                <div class="nav-link-title">Dashboard</div>
-                                <div class="nav-link-description">Voltar ao painel principal</div>
-                            </div>
-                        </a>
-                        
-                        <a href="{{ route('atividades') }}" class="nav-link-item">
-                            <i class="fas fa-tasks" style="color: #8b5cf6;"></i>
-                            <div class="nav-link-content">
-                                <div class="nav-link-title">Atividades</div>
-                                <div class="nav-link-description">Página atual</div>
-                            </div>
-                        </a>
-                        
-                        <button class="nav-link-item" onclick="openNovaAtividadeModal()">
-                            <i class="fas fa-plus" style="color: #10b981;"></i>
-                            <div class="nav-link-content">
-                                <div class="nav-link-title">Nova Atividade</div>
-                                <div class="nav-link-description">Criar nova tarefa</div>
-                            </div>
-                        </button>
-                        
-                        <a href="{{ route('dashboard') }}#projetos" class="nav-link-item">
-                            <i class="fas fa-folder" style="color: #f59e0b;"></i>
-                            <div class="nav-link-content">
-                                <div class="nav-link-title">Projetos</div>
-                                <div class="nav-link-description">Gerenciar projetos</div>
-                            </div>
-                        </a>
-                        
-                        <a href="{{ route('profile') }}" class="nav-link-item">
-                            <i class="fas fa-user" style="color: #ef4444;"></i>
-                            <div class="nav-link-content">
-                                <div class="nav-link-title">Meu Perfil</div>
-                                <div class="nav-link-description">Configurações e estatísticas</div>
-                            </div>
-                        </a>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Conteúdo Principal -->
-    <div class="container my-4">
-        <div class="main-content-card">
-            <!-- Header -->
-            <div class="row mb-4">
-                <div class="col-12">
-                    <div class="section-title mb-4">
-                        <div class="section-icon">📋</div>
-                        <h2 class="glass-text mb-0">Minhas Atividades</h2>
-                        <p class="glass-text-muted">Interface simples</p>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Filtros -->
-            <div class="row mb-4">
-                <div class="col-12">
-                    <div class="glass-card p-4">
-                        <h5 class="glass-text mb-3">
-                            <i class="fas fa-filter me-2" style="color: #f59e0b; opacity: 0.8;"></i>
-                            Filtros
-                        </h5>
-                        <div class="row g-3">
-                            <div class="col-lg-3 col-md-6">
-                                <label class="form-label glass-text small">Status</label>
-                                <select class="form-select glass-input" id="filtroStatus">
-                                    <option value="">Todos os Status</option>
-                                    <option value="pendente">🔄 Pendente</option>
-                                    <option value="em_andamento">⚡ Em Andamento</option>
-                                    <option value="concluida">✅ Concluída</option>
-                                </select>
-                            </div>
-                            <div class="col-lg-3 col-md-6">
-                                <label class="form-label glass-text small">Prioridade</label>
-                                <select class="form-select glass-input" id="filtroPrioridade">
-                                    <option value="">Todas as Prioridades</option>
-                                    <option value="alta">🔥 Alta</option>
-                                    <option value="media">🔸 Média</option>
-                                    <option value="baixa">🔹 Baixa</option>
-                                </select>
-                            </div>
-                            <div class="col-lg-4 col-md-8">
-                                <label class="form-label glass-text small">Buscar</label>
-                                <input type="text" class="form-control glass-input" id="buscar" placeholder="🔍 Buscar atividades...">
-                            </div>
-                            <div class="col-lg-2 col-md-4 d-flex align-items-end">
-                                <button class="btn glass-button w-100" id="limparFiltros">
-                                    <i class="fas fa-times me-1"></i>Limpar
-                                </button>
-                            </div>
+        <!-- Estatísticas -->
+        <div class="row mb-4">
+            <div class="col-lg-3 col-md-6 mb-3">
+                <div class="stats-card">
+                    <div class="d-flex align-items-center">
+                        <div class="stats-icon me-3">
+                            <i class="fas fa-list text-primary"></i>
+                        </div>
+                        <div>
+                            <h4 class="glass-text mb-0" id="totalAtividades">0</h4>
+                            <small class="glass-text-muted">Total</small>
                         </div>
                     </div>
                 </div>
             </div>
+            <div class="col-lg-3 col-md-6 mb-3">
+                <div class="stats-card">
+                    <div class="d-flex align-items-center">
+                        <div class="stats-icon me-3">
+                            <i class="fas fa-clock text-warning"></i>
+                        </div>
+                        <div>
+                            <h4 class="glass-text mb-0" id="pendentes">0</h4>
+                            <small class="glass-text-muted">Pendentes</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-3 col-md-6 mb-3">
+                <div class="stats-card">
+                    <div class="d-flex align-items-center">
+                        <div class="stats-icon me-3">
+                            <i class="fas fa-spinner text-info"></i>
+                        </div>
+                        <div>
+                            <h4 class="glass-text mb-0" id="emAndamento">0</h4>
+                            <small class="glass-text-muted">Em Andamento</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-3 col-md-6 mb-3">
+                <div class="stats-card">
+                    <div class="d-flex align-items-center">
+                        <div class="stats-icon me-3">
+                            <i class="fas fa-check text-success"></i>
+                        </div>
+                        <div>
+                            <h4 class="glass-text mb-0" id="concluidas">0</h4>
+                            <small class="glass-text-muted">Concluídas</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
 
-            <!-- Botão Nova Atividade -->
-            <div class="row mb-4">
-                <div class="col-12 text-center">
-                    <button class="btn glass-button btn-lg" data-bs-toggle="modal" data-bs-target="#novaAtividadeModal">
-                        <i class="fas fa-plus me-2"></i>✨ Nova Atividade
+        <!-- Filtros -->
+        <div class="glass-card mb-4">
+            <div class="row g-3">
+                <div class="col-lg-2 col-md-4 col-sm-6">
+                    <select id="statusFilter" class="form-select filter-input" onchange="applyFilters()">
+                        <option value="">Todos os Status</option>
+                        <option value="pendente">Pendente</option>
+                        <option value="em_andamento">Em Andamento</option>
+                        <option value="concluida">Concluída</option>
+                    </select>
+                </div>
+                <div class="col-lg-2 col-md-4 col-sm-6">
+                    <select id="priorityFilter" class="form-select filter-input" onchange="applyFilters()">
+                        <option value="">Todas as Prioridades</option>
+                        <option value="alta">Alta</option>
+                        <option value="media">Média</option>
+                        <option value="baixa">Baixa</option>
+                    </select>
+                </div>
+                <div class="col-lg-2 col-md-4 col-sm-6">
+                    <select id="periodFilter" class="form-select filter-input" onchange="applyFilters()">
+                        <option value="">Todos os Períodos</option>
+                        <option value="today">Hoje</option>
+                        <option value="week">Esta Semana</option>
+                        <option value="month">Este Mês</option>
+                        <option value="overdue">Atrasadas</option>
+                    </select>
+                </div>
+                <div class="col-lg-2 col-md-4 col-sm-6">
+                    <select id="sortFilter" class="form-select filter-input" onchange="applyFilters()">
+                        <option value="created_at">Data de Criação</option>
+                        <option value="data_fim">Data de Conclusão</option>
+                        <option value="prioridade">Prioridade</option>
+                        <option value="status">Status</option>
+                        <option value="progresso">Progresso</option>
+                        <option value="titulo">Título</option>
+                    </select>
+                </div>
+                <div class="col-lg-2 col-md-4 col-sm-6">
+                    <select id="viewFilter" class="form-select filter-input" onchange="changeView()">
+                        <option value="cards">Cards</option>
+                        <option value="list">Lista</option>
+                        <option value="compact">Compacto</option>
+                    </select>
+                </div>
+                <div class="col-lg-2 col-md-4 col-sm-6">
+                    <input type="text" id="searchInput" class="form-control filter-input" 
+                           placeholder="Buscar atividades..." onkeyup="applyFilters()">
+                </div>
+            </div>
+        </div>
+
+        <!-- Lista de Atividades -->
+        <div id="atividadesContainer">
+            <!-- As atividades serão renderizadas aqui via JavaScript -->
+        </div>
+    </div>
+</div>
+
+<!-- Overlay de Edição -->
+<div id="editOverlay" class="edit-overlay">
+    <div class="edit-overlay-background"></div>
+    <div class="edit-container">
+        <div id="editHighlightCard" class="edit-highlight-card">
+            <!-- Card da atividade será clonado aqui -->
+        </div>
+        <div class="edit-form-container">
+            <div class="edit-form-card">
+                <div class="edit-form-header">
+                    <h5><i class="fas fa-edit me-2"></i>Editar Atividade</h5>
+                    <button class="edit-close-btn" onclick="closeEditModal()">
+                        <i class="fas fa-times"></i>
                     </button>
                 </div>
-            </div>
-
-            <!-- Lista de Atividades -->
-            <div class="row">
-                <div class="col-12">
-                    <div class="glass-card p-4">
-                        <h5 class="glass-text mb-4">
-                            <i class="fas fa-list me-2" style="color: #06b6d4; opacity: 0.8;"></i>
-                            Lista de Atividades
-                        </h5>
-                        <div id="listaAtividades">
-                            <div class="text-center py-5">
-                                <div class="spinner-border glass-spinner" role="status">
-                                    <span class="visually-hidden">Carregando...</span>
-                                </div>
-                                <p class="glass-text-muted mt-3">Carregando atividades...</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Modal Nova Atividade -->
-    <div class="modal fade" id="novaAtividadeModal" tabindex="-1">
-        <div class="modal-dialog modal-lg">
-            <div class="modal-content glass-modal">
-                <div class="modal-header glass-modal-header">
-                    <h5 class="modal-title glass-text">
-                        <i class="fas fa-plus me-2" style="color: #00ffff;"></i>✨ Nova Atividade
-                    </h5>
-                    <button type="button" class="btn-close glass-btn-close" data-bs-dismiss="modal"></button>
-                </div>
-                <div class="modal-body">
-                    <form id="formNovaAtividade">
-                        <div class="row g-4">
+                <div class="edit-form-body">
+                    <form id="editForm">
+                        <input type="hidden" id="editId">
+                        <div class="row g-3">
                             <div class="col-12">
-                                <label class="form-label glass-text">Título *</label>
-                                <input type="text" class="form-control glass-input" name="titulo" required placeholder="Digite o título da atividade...">
-                            </div>
-                            <div class="col-12">
-                                <label class="form-label glass-text">Descrição</label>
-                                <textarea class="form-control glass-input" name="descricao" rows="4" placeholder="Descreva sua atividade..."></textarea>
+                                <label class="form-label glass-text">Título</label>
+                                <input type="text" id="editTitulo" class="form-control glass-input" required>
                             </div>
                             <div class="col-md-6">
                                 <label class="form-label glass-text">Status</label>
-                                <select class="form-select glass-input" name="status">
-                                    <option value="pendente">🔄 Pendente</option>
-                                    <option value="em_andamento">⚡ Em Andamento</option>
-                                    <option value="concluida">✅ Concluída</option>
+                                <select id="editStatus" class="form-select glass-input">
+                                    <option value="pendente">Pendente</option>
+                                    <option value="em_andamento">Em Andamento</option>
+                                    <option value="concluida">Concluída</option>
                                 </select>
                             </div>
                             <div class="col-md-6">
                                 <label class="form-label glass-text">Prioridade</label>
-                                <select class="form-select glass-input" name="prioridade">
-                                    <option value="baixa">🔹 Baixa</option>
-                                    <option value="media" selected>🔸 Média</option>
-                                    <option value="alta">🔥 Alta</option>
+                                <select id="editPrioridade" class="form-select glass-input">
+                                    <option value="baixa">Baixa</option>
+                                    <option value="media">Média</option>
+                                    <option value="alta">Alta</option>
                                 </select>
                             </div>
-                            <div class="col-12">
-                                <label class="form-label glass-text">Data Limite</label>
-                                <input type="date" class="form-control glass-input" name="data_limite">
+                            <div class="col-md-6">
+                                <label class="form-label glass-text">Data de Início</label>
+                                <input type="date" id="editDataInicio" class="form-control glass-input">
                             </div>
-                        </div>
-                    </form>
-                </div>
-                <div class="modal-footer glass-modal-footer">
-                    <button type="button" class="btn glass-button-secondary" data-bs-dismiss="modal">
-                        <i class="fas fa-times me-2"></i>Cancelar
-                    </button>
-                    <button type="button" class="btn glass-button" id="salvarAtividade">
-                        <i class="fas fa-save me-2"></i>Salvar Atividade
-                    </button>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Overlay de Edição Animado -->
-    <div class="edit-overlay" id="editOverlay">
-        <div class="edit-overlay-background" onclick="closeEditOverlay()"></div>
-        <div class="edit-container">
-            <!-- Card da Atividade Destacada -->
-            <div class="edit-highlight-card" id="editHighlightCard">
-                <div class="highlight-glow"></div>
-                <div class="activity-preview" id="activityPreview">
-                    <!-- Conteúdo da atividade será inserido aqui -->
-                </div>
-            </div>
-            
-            <!-- Formulário de Edição -->
-            <div class="edit-form-container" id="editFormContainer">
-                <div class="edit-form-card">
-                    <div class="edit-form-header">
-                        <h5 class="glass-text">
-                            <i class="fas fa-edit me-2" style="color: #f59e0b;"></i>Editar Atividade
-                        </h5>
-                        <button type="button" class="edit-close-btn" onclick="closeEditOverlay()">
-                            <i class="fas fa-times"></i>
-                        </button>
-                    </div>
-                    
-                    <form id="formEditAtividade" class="edit-form-body">
-                        <div class="row g-3">
-                            <div class="col-12">
-                                <label class="form-label glass-text">Título *</label>
-                                <input type="text" class="form-control glass-input" id="editTitulo" name="titulo" required>
+                            <div class="col-md-6">
+                                <label class="form-label glass-text">Data de Conclusão</label>
+                                <input type="date" id="editDataFim" class="form-control glass-input">
                             </div>
                             <div class="col-12">
                                 <label class="form-label glass-text">Descrição</label>
-                                <textarea class="form-control glass-input" id="editDescricao" name="descricao" rows="3"></textarea>
+                                <textarea id="editDescricao" class="form-control glass-input" rows="3"></textarea>
                             </div>
                             <div class="col-md-6">
-                                <label class="form-label glass-text">Status</label>
-                                <select class="form-select glass-input" id="editStatus" name="status">
-                                    <option value="pendente">🔄 Pendente</option>
-                                    <option value="em_andamento">⚡ Em Andamento</option>
-                                    <option value="concluida">✅ Concluída</option>
-                                </select>
+                                <label class="form-label glass-text">Progresso (%)</label>
+                                <input type="range" id="editProgresso" class="form-range" min="0" max="100" value="0">
+                                <div class="text-center">
+                                    <span id="progressoValue" class="glass-text">0%</span>
+                                </div>
                             </div>
                             <div class="col-md-6">
-                                <label class="form-label glass-text">Prioridade</label>
-                                <select class="form-select glass-input" id="editPrioridade" name="prioridade">
-                                    <option value="baixa">🔹 Baixa</option>
-                                    <option value="media">🔸 Média</option>
-                                    <option value="alta">🔥 Alta</option>
+                                <label class="form-label glass-text">Categoria</label>
+                                <select id="editCategoria" class="form-select glass-input">
+                                    <option value="">Sem categoria</option>
+                                    <option value="1">Trabalho</option>
+                                    <option value="2">Estudos</option>
+                                    <option value="3">Pessoal</option>
+                                    <option value="4">Saúde</option>
+                                    <option value="5">Lazer</option>
                                 </select>
-                            </div>
-                            <div class="col-12">
-                                <label class="form-label glass-text">Data Limite</label>
-                                <input type="date" class="form-control glass-input" id="editDataLimite" name="data_limite">
                             </div>
                         </div>
                     </form>
-                    
-                    <div class="edit-form-footer">
-                        <div class="edit-shortcuts">
-                            <small class="glass-text-muted">
-                                <i class="fas fa-keyboard me-1"></i>
-                                <kbd>Ctrl+S</kbd> Salvar • <kbd>Esc</kbd> Cancelar
-                            </small>
-                        </div>
-                        <div class="edit-actions">
-                            <button type="button" class="btn glass-button-secondary" onclick="closeEditOverlay()">
-                                <i class="fas fa-times me-2"></i>Cancelar
-                            </button>
-                            <button type="button" class="btn glass-button" id="salvarEdicao">
-                                <i class="fas fa-save me-2"></i>Salvar Alterações
-                            </button>
-                        </div>
+                </div>
+                <div class="edit-form-footer">
+                    <div class="edit-shortcuts">
+                        <small class="glass-text-muted">
+                            <kbd>Ctrl+S</kbd> Salvar | <kbd>Esc</kbd> Cancelar
+                        </small>
+                    </div>
+                    <div class="edit-actions">
+                        <button class="btn btn-glass-secondary" onclick="closeEditModal()">
+                            <i class="fas fa-times me-2"></i>Cancelar
+                        </button>
+                        <button class="btn btn-glass" onclick="saveEdit()">
+                            <i class="fas fa-save me-2"></i>Salvar
+                        </button>
                     </div>
                 </div>
             </div>
         </div>
     </div>
+</div>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    
-    <script>
-        // Função para atualizar o relógio em tempo real
-        function updateClock() {
-            const now = new Date();
-            const hours = String(now.getHours()).padStart(2, '0');
-            const minutes = String(now.getMinutes()).padStart(2, '0');
-            const seconds = String(now.getSeconds()).padStart(2, '0');
-            const timeString = `${hours}:${minutes}:${seconds}`;
-            
-            // Atualizar relógio gigante do fullscreen
-            const dropdownClockElement = document.getElementById('dropdownClock');
-            if (dropdownClockElement) {
-                dropdownClockElement.textContent = timeString;
-            }
-            
-            // Atualizar data
-            const dropdownDateElement = document.getElementById('dropdownDate');
-            if (dropdownDateElement) {
-                const options = { 
-                    weekday: 'long', 
-                    year: 'numeric', 
-                    month: 'long', 
-                    day: 'numeric' 
-                };
-                const dateString = now.toLocaleDateString('pt-BR', options);
-                dropdownDateElement.textContent = dateString;
-            }
-        }
-        
-        // Atualizar o relógio a cada segundo
-        setInterval(updateClock, 1000);
-        updateClock(); // Chamar imediatamente ao carregar a página
-        
-        // Estado do dropdown menu
-        let dropdownVisible = false;
-        
-        // Função para alternar o dropdown menu
-        function toggleDropdownMenu() {
-            const dropdownOverlay = document.getElementById('dropdownMenuOverlay');
-            
-            if (dropdownVisible) {
-                closeDropdownMenu();
-            } else {
-                openDropdownMenu();
-            }
-        }
-        
-        // Função para abrir o dropdown menu
-        function openDropdownMenu() {
-            const dropdownOverlay = document.getElementById('dropdownMenuOverlay');
-            if (dropdownOverlay) {
-                dropdownOverlay.classList.add('show');
-                dropdownVisible = true;
-            }
-        }
-        
-        // Função para fechar o dropdown menu
-        function closeDropdownMenu() {
-            const dropdownOverlay = document.getElementById('dropdownMenuOverlay');
-            if (dropdownOverlay) {
-                dropdownOverlay.classList.remove('show');
-                dropdownVisible = false;
-            }
-        }
-        
-        // Função para abrir modal de nova atividade
-        function openNovaAtividadeModal() {
-            closeDropdownMenu();
-            const modal = new bootstrap.Modal(document.getElementById('novaAtividadeModal'));
-            modal.show();
-        }
-        
-        // Função para atualizar página
-        function refreshPage() {
-            closeDropdownMenu();
-            location.reload();
-        }
-        
-        // Fechar dropdown ao pressionar ESC
-        document.addEventListener('keydown', function(event) {
-            if (event.key === 'Escape') {
-                closeDropdownMenu();
-            }
-        });
-        
-        // Fechar dropdown ao clicar fora
-        document.addEventListener('click', function(event) {
-            const dropdownOverlay = document.getElementById('dropdownMenuOverlay');
-            const animatedBar = document.querySelector('.animated-bar');
-            
-            if (dropdownVisible && 
-                !dropdownOverlay.contains(event.target) && 
-                !animatedBar.contains(event.target)) {
-                closeDropdownMenu();
-            }
-        });
-
-        // Carregar atividades
-        async function carregarAtividades() {
-            try {
-                const response = await fetch('/api/atividades');
-                const data = await response.json();
-                
-                if (data.success) {
-                    // Armazenar atividades globalmente
-                    atividades = data.data;
-                    atividadesOriginais = [...data.data]; // Para os filtros
-                    console.log('Atividades carregadas:', atividades.length);
-                    
-                    // Configurar event listeners dos filtros na primeira carga
-                    if (!window.filtrosConfigurados) {
-                        configurarEventosFiltros();
-                        window.filtrosConfigurados = true;
-                        console.log('Event listeners dos filtros configurados');
-                    }
-                    
-                    renderizarAtividades(data.data);
-                } else {
-                    console.error('Erro ao carregar atividades:', data);
-                }
-            } catch (error) {
-                console.error('Erro ao carregar atividades:', error);
-                const container = document.getElementById('listaAtividades');
-                container.innerHTML = `
-                    <div class="text-center py-5">
-                        <i class="fas fa-exclamation-triangle fa-3x glass-icon mb-3" style="color: #f59e0b; opacity: 0.6;"></i>
-                        <h5 class="glass-text">Erro ao carregar atividades</h5>
-                        <p class="glass-text-muted">Tente atualizar a página</p>
-                        <button class="btn glass-button" onclick="carregarAtividades()">
-                            <i class="fas fa-sync me-2"></i>Tentar Novamente
-                        </button>
-                    </div>
-                `;
-            }
-        }
-
-        // Renderizar lista de atividades
-        function renderizarAtividades(atividades) {
-            const container = document.getElementById('listaAtividades');
-            
-            if (atividades.length === 0) {
-                container.innerHTML = `
-                    <div class="text-center py-5">
-                        <i class="fas fa-inbox fa-4x glass-icon mb-3" style="color: #06b6d4; opacity: 0.6;"></i>
-                        <h5 class="glass-text">Nenhuma atividade encontrada</h5>
-                        <p class="glass-text-muted">Clique em "Nova Atividade" para começar</p>
-                        <button class="btn glass-button" data-bs-toggle="modal" data-bs-target="#novaAtividadeModal">
-                            <i class="fas fa-plus me-2"></i>Criar Primeira Atividade
-                        </button>
-                    </div>
-                `;
-                return;
-            }
-
-            const html = atividades.map(atividade => {
-                const statusConfig = {
-                    'concluida': { color: '#10b981', icon: 'check-circle', label: 'Concluída' },
-                    'em_andamento': { color: '#f59e0b', icon: 'clock', label: 'Em Andamento' },
-                    'pendente': { color: '#6b7280', icon: 'circle', label: 'Pendente' }
-                };
-                
-                const prioridadeConfig = {
-                    'alta': { color: '#ef4444', icon: 'arrow-up', label: 'Alta' },
-                    'media': { color: '#f59e0b', icon: 'minus', label: 'Média' },
-                    'baixa': { color: '#06b6d4', icon: 'arrow-down', label: 'Baixa' }
-                };
-                
-                const status = statusConfig[atividade.status] || statusConfig['pendente'];
-                const prioridade = prioridadeConfig[atividade.prioridade] || prioridadeConfig['media'];
-                
-                return `
-                    <div class="activity-card mb-3 p-4" data-activity-id="${atividade.id}" style="border-left: 4px solid ${prioridade.color};">
-                        <div class="row align-items-center">
-                            <div class="col-md-8">
-                                <h6 class="glass-text mb-2">${atividade.titulo}</h6>
-                                <p class="glass-text-muted mb-2">${atividade.descricao || 'Sem descrição'}</p>
-                                <div class="d-flex flex-wrap gap-2">
-                                    <span class="glass-badge" style="background: ${status.color}20; color: ${status.color};">
-                                        <i class="fas fa-${status.icon} me-1"></i>${status.label}
-                                    </span>
-                                    <span class="glass-badge" style="background: ${prioridade.color}20; color: ${prioridade.color};">
-                                        <i class="fas fa-${prioridade.icon} me-1"></i>${prioridade.label}
-                                    </span>
-                                </div>
-                            </div>
-                            <div class="col-md-4 text-md-end">
-                                <div class="mb-2">
-                                    <small class="glass-text-muted">
-                                        <i class="fas fa-calendar-plus me-1"></i>
-                                        ${new Date(atividade.created_at).toLocaleDateString('pt-BR')}
-                                    </small>
-                                </div>
-                                ${atividade.data_limite ? 
-                                    `<div class="mb-2">
-                                        <small class="glass-text-muted">
-                                            <i class="fas fa-calendar-alt me-1"></i>
-                                            ${new Date(atividade.data_limite).toLocaleDateString('pt-BR')}
-                                        </small>
-                                    </div>` : ''}
-                                <div class="btn-group">
-                                    <button class="btn btn-sm glass-button-sm edit-activity-btn" onclick="editarAtividade(${atividade.id})" title="Editar atividade (Ctrl+E)">
-                                        <i class="fas fa-edit"></i>
-                                    </button>
-                                    <button class="btn btn-sm glass-button-danger" onclick="excluirAtividade(${atividade.id})" title="Excluir atividade">
-                                        <i class="fas fa-trash"></i>
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                `;
-            }).join('');
-
-            container.innerHTML = html;
-            
-            // Adicionar efeitos visuais aos cards
-            addActivityCardEffects();
-        }
-
-        // Salvar nova atividade
-        document.getElementById('salvarAtividade').addEventListener('click', async () => {
-            const form = document.getElementById('formNovaAtividade');
-            const formData = new FormData(form);
-            const button = document.getElementById('salvarAtividade');
-            
-            // Desabilitar botão durante salvamento
-            button.disabled = true;
-            button.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Salvando...';
-            
-            try {
-                const response = await fetch('/api/atividades', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-                    },
-                    body: JSON.stringify(Object.fromEntries(formData))
-                });
-                
-                const data = await response.json();
-                
-                if (data.success) {
-                    bootstrap.Modal.getInstance(document.getElementById('novaAtividadeModal')).hide();
-                    form.reset();
-                    carregarAtividades();
-                    
-                    // Mostrar notificação de sucesso
-                    showNotification('✅ Atividade criada com sucesso!', 'success');
-                } else {
-                    console.error('Erro ao salvar atividade:', data);
-                    showNotification('❌ Erro ao criar atividade', 'error');
-                }
-            } catch (error) {
-                console.error('Erro ao salvar atividade:', error);
-                showNotification('❌ Erro de conexão', 'error');
-            } finally {
-                // Reabilitar botão
-                button.disabled = false;
-                button.innerHTML = '<i class="fas fa-save me-2"></i>Salvar Atividade';
-            }
-        });
-
-        // Função para mostrar notificações
-        function showNotification(message, type = 'info') {
-            const notification = document.createElement('div');
-            notification.className = `glass-notification ${type}`;
-            notification.innerHTML = `
-                <div class="glass-card p-3" style="position: fixed; top: 100px; right: 20px; z-index: 9999; min-width: 300px;">
-                    <p class="glass-text mb-0">${message}</p>
+<!-- Overlay de Remoção -->
+<div id="deleteOverlay" class="delete-overlay">
+    <div class="delete-overlay-background"></div>
+    <div class="delete-container">
+        <div class="delete-header">
+            <h4><i class="fas fa-trash me-2"></i>Remover Atividade</h4>
+            <p>Arraste a atividade para a lixeira vermelha ou clique na lixeira para confirmar a remoção</p>
+        </div>
+        <div class="delete-main">
+            <div class="delete-item">
+                <div id="deleteActivityCard" class="delete-activity-card">
+                    <!-- Card da atividade será clonado aqui -->
                 </div>
-            `;
-            
-            document.body.appendChild(notification);
-            
-            // Remover após 3 segundos
-            setTimeout(() => {
-                notification.remove();
-            }, 3000);
-        }
-
-        // Variáveis globais para edição
-        let currentEditingId = null;
-        let currentAtividadeData = null;
-
-        // Função para editar atividade
-        async function editarAtividade(id) {
-            try {
-                // Destacar atividade sendo editada
-                highlightEditingActivity(id);
-                
-                // Buscar dados da atividade
-                const response = await fetch(`/api/atividades/${id}`);
-                const data = await response.json();
-                
-                if (data.success) {
-                    currentEditingId = id;
-                    currentAtividadeData = data.data;
-                    openEditOverlay(data.data);
-                } else {
-                    showNotification('❌ Erro ao carregar atividade', 'error');
-                }
-            } catch (error) {
-                console.error('Erro ao buscar atividade:', error);
-                showNotification('❌ Erro de conexão', 'error');
-            }
-        }
-
-        // Abrir overlay de edição com animação
-        function openEditOverlay(atividade) {
-            const overlay = document.getElementById('editOverlay');
-            
-            // Popular preview da atividade
-            populateActivityPreview(atividade);
-            
-            // Popular formulário de edição
-            populateEditForm(atividade);
-            
-            // Mostrar overlay com animação
-            overlay.style.display = 'flex';
-            setTimeout(() => {
-                overlay.classList.add('show');
-            }, 10);
-            
-            // Bloquear scroll da página
-            document.body.style.overflow = 'hidden';
-        }
-
-        // Popular preview da atividade
-        function populateActivityPreview(atividade) {
-            const preview = document.getElementById('activityPreview');
-            
-            const prioridades = {
-                'baixa': { label: 'Baixa', color: '#06b6d4', icon: 'arrow-down' },
-                'media': { label: 'Média', color: '#f59e0b', icon: 'minus' },
-                'alta': { label: 'Alta', color: '#ef4444', icon: 'arrow-up' }
-            };
-            
-            const status = {
-                'pendente': { label: 'Pendente', color: '#6b7280', icon: 'clock' },
-                'em_andamento': { label: 'Em Andamento', color: '#f59e0b', icon: 'play' },
-                'concluida': { label: 'Concluída', color: '#10b981', icon: 'check' }
-            };
-            
-            const prioridade = prioridades[atividade.prioridade] || prioridades['media'];
-            const statusInfo = status[atividade.status] || status['pendente'];
-            
-            preview.innerHTML = `
-                <h6>${atividade.titulo}</h6>
-                <p>${atividade.descricao || 'Sem descrição'}</p>
-                
-                <div class="preview-badges">
-                    <span class="preview-badge" style="background: ${statusInfo.color}20; color: ${statusInfo.color};">
-                        <i class="fas fa-${statusInfo.icon} me-1"></i>${statusInfo.label}
-                    </span>
-                    <span class="preview-badge" style="background: ${prioridade.color}20; color: ${prioridade.color};">
-                        <i class="fas fa-${prioridade.icon} me-1"></i>${prioridade.label}
-                    </span>
-                </div>
-                
-                <div class="preview-dates">
-                    <div class="preview-date">
-                        <i class="fas fa-calendar-plus"></i>
-                        Criado: ${new Date(atividade.created_at).toLocaleDateString('pt-BR')}
-                    </div>
-                    ${atividade.data_limite ? `
-                        <div class="preview-date">
-                            <i class="fas fa-calendar-alt"></i>
-                            Prazo: ${new Date(atividade.data_limite).toLocaleDateString('pt-BR')}
-                        </div>
-                    ` : ''}
-                </div>
-            `;
-        }
-
-        // Popular formulário de edição
-        function populateEditForm(atividade) {
-            document.getElementById('editTitulo').value = atividade.titulo || '';
-            document.getElementById('editDescricao').value = atividade.descricao || '';
-            document.getElementById('editStatus').value = atividade.status || 'pendente';
-            document.getElementById('editPrioridade').value = atividade.prioridade || 'media';
-            
-            // Formatar data para input type="date"
-            if (atividade.data_limite) {
-                const date = new Date(atividade.data_limite);
-                const formattedDate = date.toISOString().split('T')[0];
-                document.getElementById('editDataLimite').value = formattedDate;
-            } else {
-                document.getElementById('editDataLimite').value = '';
-            }
-        }
-
-        // Fechar overlay de edição
-        function closeEditOverlay() {
-            const overlay = document.getElementById('editOverlay');
-            
-            // Animação de saída
-            overlay.classList.add('hiding');
-            overlay.classList.remove('show');
-            
-            setTimeout(() => {
-                overlay.style.display = 'none';
-                overlay.classList.remove('hiding');
-                
-                // Restaurar scroll da página
-                document.body.style.overflow = 'auto';
-                
-                // Limpar dados
-                currentEditingId = null;
-                currentAtividadeData = null;
-                
-                // Remover destaque da atividade
-                const editingCard = document.querySelector('.activity-card.editing');
-                if (editingCard) {
-                    editingCard.classList.remove('editing');
-                }
-            }, 400);
-        }
-
-        // Salvar edição
-        document.getElementById('salvarEdicao').addEventListener('click', async () => {
-            if (!currentEditingId) return;
-            
-            // Validar formulário
-            if (!validateEditForm()) return;
-            
-            const form = document.getElementById('formEditAtividade');
-            const formData = new FormData(form);
-            const button = document.getElementById('salvarEdicao');
-            
-            // Desabilitar botão durante salvamento
-            button.disabled = true;
-            button.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Salvando...';
-            
-            try {
-                const response = await fetch(`/api/atividades/${currentEditingId}`, {
-                    method: 'PUT',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-                    },
-                    body: JSON.stringify(Object.fromEntries(formData))
-                });
-                
-                const data = await response.json();
-                
-                if (data.success) {
-                    // Mostrar notificação de sucesso antes de fechar
-                    showNotification('✅ Atividade atualizada com sucesso!', 'success');
-                    
-                    // Fechar overlay com delay para mostrar feedback
-                    setTimeout(() => {
-                        closeEditOverlay();
-                        carregarAtividades(); // Recarregar lista
-                    }, 500);
-                } else {
-                    console.error('Erro ao atualizar atividade:', data);
-                    showNotification('❌ Erro ao atualizar atividade', 'error');
-                }
-            } catch (error) {
-                console.error('Erro ao salvar edição:', error);
-                showNotification('❌ Erro de conexão', 'error');
-            } finally {
-                // Reabilitar botão
-                button.disabled = false;
-                button.innerHTML = '<i class="fas fa-save me-2"></i>Salvar Alterações';
-            }
-        });
-
-        // Atalhos de teclado
-        document.addEventListener('keydown', function(event) {
-            // ESC - Fechar overlay de edição
-            if (event.key === 'Escape' && document.getElementById('editOverlay').classList.contains('show')) {
-                closeEditOverlay();
-                return;
-            }
-            
-            // Ctrl+S - Salvar edição
-            if (event.ctrlKey && event.key === 's' && document.getElementById('editOverlay').classList.contains('show')) {
-                event.preventDefault();
-                document.getElementById('salvarEdicao').click();
-                return;
-            }
-            
-            // Ctrl+N - Nova atividade
-            if (event.ctrlKey && event.key === 'n' && !document.getElementById('editOverlay').classList.contains('show')) {
-                event.preventDefault();
-                const modal = new bootstrap.Modal(document.getElementById('novaAtividadeModal'));
-                modal.show();
-                return;
-            }
-        });
-        
-        // Adicionar efeitos visuais aos cards de atividade
-        function addActivityCardEffects() {
-            const cards = document.querySelectorAll('.activity-card');
-            cards.forEach(card => {
-                // Remover listeners existentes para evitar duplicação
-                card.removeEventListener('mouseenter', handleCardHover);
-                card.removeEventListener('mouseleave', handleCardLeave);
-                
-                // Adicionar novos listeners
-                card.addEventListener('mouseenter', handleCardHover);
-                card.addEventListener('mouseleave', handleCardLeave);
-            });
-        }
-        
-        function handleCardHover(event) {
-            const card = event.currentTarget;
-            card.style.transform = 'translateY(-4px) scale(1.02)';
-            card.style.boxShadow = '0 15px 35px rgba(0, 0, 0, 0.15), 0 8px 20px rgba(0, 0, 0, 0.1)';
-            card.style.transition = 'all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94)';
-        }
-        
-        function handleCardLeave(event) {
-            const card = event.currentTarget;
-            card.style.transform = 'translateY(0) scale(1)';
-            card.style.boxShadow = '0 8px 25px rgba(0, 0, 0, 0.1)';
-        }
-        
-        // Destacar atividade sendo editada
-        function highlightEditingActivity(id) {
-            // Remover destaque anterior
-            const previousHighlight = document.querySelector('.activity-card.editing');
-            if (previousHighlight) {
-                previousHighlight.classList.remove('editing');
-            }
-            
-            // Adicionar destaque à atividade atual
-            const currentCard = document.querySelector(`[data-activity-id="${id}"]`);
-            if (currentCard) {
-                currentCard.classList.add('editing');
-                
-                // Scroll suave para a atividade
-                currentCard.scrollIntoView({
-                    behavior: 'smooth',
-                    block: 'center'
-                });
-            }
-        }
-        
-        // Validação do formulário de edição
-        function validateEditForm() {
-            const titulo = document.getElementById('editTitulo').value.trim();
-            
-            if (!titulo) {
-                showNotification('❌ O título é obrigatório', 'error');
-                document.getElementById('editTitulo').focus();
-                return false;
-            }
-            
-            if (titulo.length > 255) {
-                showNotification('❌ O título deve ter no máximo 255 caracteres', 'error');
-                document.getElementById('editTitulo').focus();
-                return false;
-            }
-            
-            return true;
-        }
-
-        // Variável global para armazenar atividades
-        let atividades = [];
-
-        // Função para abrir overlay de exclusão estilo macOS
-        function excluirAtividade(id) {
-            console.log('Tentando excluir atividade ID:', id);
-            console.log('Atividades disponíveis:', atividades);
-            
-            const atividade = atividades.find(a => a.id === id);
-            if (!atividade) {
-                console.error('Atividade não encontrada:', id);
-                return;
-            }
-            
-            console.log('Atividade encontrada:', atividade);
-            showDeleteOverlay(atividade);
-        }
-
-        // Função para mostrar overlay de exclusão
-        function showDeleteOverlay(atividade) {
-            console.log('Tentando mostrar overlay para atividade:', atividade);
-            
-            const overlay = document.getElementById('deleteOverlay');
-            const atividadeCard = document.getElementById('deleteAtividadeCard');
-            
-            if (!overlay) {
-                console.error('Elemento deleteOverlay não encontrado!');
-                return;
-            }
-            
-            if (!atividadeCard) {
-                console.error('Elemento deleteAtividadeCard não encontrado!');
-                return;
-            }
-            
-            console.log('Elementos encontrados, preenchendo dados...');
-            
-            // Preenchir dados da atividade
-            atividadeCard.innerHTML = `
-                <div class="delete-activity-header">
-                    <i class="fas fa-tasks"></i>
-                    <h6>${atividade.titulo}</h6>
-                </div>
-                <div class="delete-activity-body">
-                    <p class="mb-1">${atividade.descricao || 'Sem descrição'}</p>
-                    <div class="delete-activity-meta">
-                        <span class="badge badge-${atividade.status}">${atividade.status}</span>
-                        <span class="badge badge-priority-${atividade.prioridade}">${atividade.prioridade}</span>
-                    </div>
-                </div>
-            `;
-            
-            // Configurar atributos de drag
-            atividadeCard.setAttribute('data-id', atividade.id);
-            atividadeCard.draggable = true;
-            
-            console.log('Mostrando overlay...');
-            
-            // Mostrar overlay
-            overlay.style.display = 'flex';
-            overlay.style.opacity = '0';
-            
-            // Animar entrada
-            requestAnimationFrame(() => {
-                overlay.style.opacity = '1';
-                atividadeCard.style.transform = 'scale(1)';
-                console.log('Overlay mostrado com sucesso!');
-                
-                // Reconfigurar drag & drop para garantir que funcione
-                setupDragAndDropForCard();
-            });
-        }
-
-        // Função para fechar overlay de exclusão
-        function hideDeleteOverlay() {
-            const overlay = document.getElementById('deleteOverlay');
-            const atividadeCard = document.getElementById('deleteAtividadeCard');
-            
-            // Animar saída
-            overlay.style.opacity = '0';
-            atividadeCard.style.transform = 'scale(0.8)';
-            
-            setTimeout(() => {
-                overlay.style.display = 'none';
-                // Reset card
-                atividadeCard.style.transform = 'scale(0.8)';
-                atividadeCard.draggable = false;
-                document.getElementById('deleteTrashIcon').classList.remove('active', 'highlight');
-            }, 300);
-        }
-
-        // Função para excluir atividade via API
-        async function performDelete(id) {
-            try {
-                const response = await fetch(`/api/atividades/${id}`, {
-                    method: 'DELETE',
-                    headers: {
-                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-                    }
-                });
-                
-                const data = await response.json();
-                
-                if (data.success) {
-                    carregarAtividades(); // Recarregar lista
-                    showNotification('✅ Atividade excluída com sucesso!', 'success');
-                    hideDeleteOverlay();
-                } else {
-                    showNotification('❌ Erro ao excluir atividade', 'error');
-                }
-            } catch (error) {
-                console.error('Erro ao excluir atividade:', error);
-                showNotification('❌ Erro de conexão', 'error');
-            }
-        }
-
-        // Sistema de Drag & Drop
-        function setupDragAndDrop() {
-            console.log('Configurando sistema de drag & drop...');
-            
-            const atividadeCard = document.getElementById('deleteAtividadeCard');
-            const trashIcon = document.getElementById('deleteTrashIcon');
-            const arrow = document.querySelector('.delete-arrow');
-            
-            console.log('Elementos drag & drop:');
-            console.log('- Card:', atividadeCard ? 'OK' : 'NÃO ENCONTRADO');
-            console.log('- Trash:', trashIcon ? 'OK' : 'NÃO ENCONTRADO');
-            console.log('- Arrow:', arrow ? 'OK' : 'NÃO ENCONTRADO');
-            
-            if (!atividadeCard || !trashIcon || !arrow) {
-                console.warn('Alguns elementos não foram encontrados, drag & drop pode não funcionar');
-                return;
-            }
-            
-            setupDragAndDropEvents(atividadeCard, trashIcon, arrow);
-        }
-
-        // Configurar drag & drop específico para o card quando overlay é mostrado
-        function setupDragAndDropForCard() {
-            console.log('Reconfigurando drag & drop para o card...');
-            
-            const atividadeCard = document.getElementById('deleteAtividadeCard');
-            const trashIcon = document.getElementById('deleteTrashIcon');
-            const arrow = document.querySelector('.delete-arrow');
-            
-            if (!atividadeCard || !trashIcon || !arrow) {
-                console.error('Elementos não encontrados para reconfigurar drag & drop');
-                return;
-            }
-            
-            setupDragAndDropEvents(atividadeCard, trashIcon, arrow);
-        }
-
-        // Função para configurar os eventos de drag & drop
-        function setupDragAndDropEvents(atividadeCard, trashIcon, arrow) {
-            console.log('Configurando eventos de drag & drop...');
-            
-            // Limpar eventos existentes (clonando elemento)
-            const newCard = atividadeCard.cloneNode(true);
-            atividadeCard.parentNode.replaceChild(newCard, atividadeCard);
-            
-            // Atualizar referência
-            const card = document.getElementById('deleteAtividadeCard');
-            
-            let isDragging = false;
-            
-            console.log('Adicionando evento dragstart...');
-            
-            // Drag start
-            card.addEventListener('dragstart', function(e) {
-                console.log('Dragstart disparado!');
-                isDragging = true;
-                this.classList.add('dragging');
-                trashIcon.classList.add('active');
-                arrow.classList.add('active');
-                
-                // Permitir drop
-                e.dataTransfer.effectAllowed = 'move';
-                e.dataTransfer.setData('text/html', this.outerHTML);
-            });
-            
-            // Drag end
-            card.addEventListener('dragend', function(e) {
-                console.log('Dragend disparado!');
-                this.classList.remove('dragging');
-                if (!trashIcon.classList.contains('highlight')) {
-                    trashIcon.classList.remove('active');
-                    arrow.classList.remove('active');
-                }
-                isDragging = false;
-            });
-            
-            console.log('Adicionando eventos da lixeira...');
-            
-            // Trash drop zone events
-            trashIcon.addEventListener('dragover', function(e) {
-                console.log('Dragover na lixeira!');
-                e.preventDefault();
-                e.dataTransfer.dropEffect = 'move';
-                this.classList.add('highlight');
-            });
-            
-            trashIcon.addEventListener('dragleave', function(e) {
-                console.log('Dragleave da lixeira!');
-                this.classList.remove('highlight');
-            });
-            
-            trashIcon.addEventListener('drop', function(e) {
-                console.log('Drop na lixeira!');
-                e.preventDefault();
-                this.classList.add('highlight');
-                
-                // Animação de sucesso
-                this.style.transform = 'scale(1.2)';
-                setTimeout(() => {
-                    this.style.transform = 'scale(1)';
-                }, 200);
-                
-                // Pegar ID da atividade
-                const atividadeId = card.getAttribute('data-id');
-                console.log('ID da atividade para excluir:', atividadeId);
-                
-                // Excluir após animação
-                setTimeout(() => {
-                    performDelete(atividadeId);
-                }, 500);
-            });
-            
-            console.log('Drag & drop configurado com sucesso!');
-        }
-
-        // Variáveis globais para filtros
-        let atividadesOriginais = [];
-        let filtrosAtivos = {
-            status: '',
-            prioridade: '',
-            busca: ''
-        };
-
-        // Função para aplicar filtros
-        function aplicarFiltros() {
-            console.log('Aplicando filtros:', filtrosAtivos);
-            
-            // Se não há atividades carregadas, não fazer nada
-            if (!atividadesOriginais.length) {
-                console.log('Nenhuma atividade para filtrar');
-                return;
-            }
-            
-            let atividadesFiltradas = [...atividadesOriginais];
-            
-            // Filtro por status
-            if (filtrosAtivos.status) {
-                atividadesFiltradas = atividadesFiltradas.filter(atividade => 
-                    atividade.status === filtrosAtivos.status
-                );
-                console.log(`Filtro status '${filtrosAtivos.status}': ${atividadesFiltradas.length} atividades`);
-            }
-            
-            // Filtro por prioridade
-            if (filtrosAtivos.prioridade) {
-                atividadesFiltradas = atividadesFiltradas.filter(atividade => 
-                    atividade.prioridade === filtrosAtivos.prioridade
-                );
-                console.log(`Filtro prioridade '${filtrosAtivos.prioridade}': ${atividadesFiltradas.length} atividades`);
-            }
-            
-            // Filtro por busca de texto
-            if (filtrosAtivos.busca) {
-                const termoBusca = filtrosAtivos.busca.toLowerCase();
-                atividadesFiltradas = atividadesFiltradas.filter(atividade => 
-                    atividade.titulo.toLowerCase().includes(termoBusca) ||
-                    (atividade.descricao && atividade.descricao.toLowerCase().includes(termoBusca))
-                );
-                console.log(`Filtro busca '${filtrosAtivos.busca}': ${atividadesFiltradas.length} atividades`);
-            }
-            
-            console.log(`Total após filtros: ${atividadesFiltradas.length} de ${atividadesOriginais.length} atividades`);
-            
-            // Renderizar atividades filtradas
-            renderizarAtividades(atividadesFiltradas);
-            
-            // Mostrar status dos filtros
-            mostrarStatusFiltros(atividadesFiltradas.length, atividadesOriginais.length);
-        }
-
-        // Função para mostrar status dos filtros
-        function mostrarStatusFiltros(filtradas, total) {
-            const container = document.getElementById('listaAtividades');
-            const temFiltroAtivo = filtrosAtivos.status || filtrosAtivos.prioridade || filtrosAtivos.busca;
-            
-            // Remover badge anterior se existir
-            const badgeExistente = container.querySelector('.filter-status-badge');
-            if (badgeExistente) {
-                badgeExistente.remove();
-            }
-            
-            if (temFiltroAtivo && filtradas < total) {
-                // Adicionar badge de status dos filtros
-                const statusHtml = `
-                    <div class="filter-status-badge mb-3">
-                        <div class="glass-card p-2">
-                            <div class="d-flex justify-content-between align-items-center">
-                                <span class="glass-text small">
-                                    <i class="fas fa-filter me-2" style="color: #00ffff;"></i>
-                                    Mostrando ${filtradas} de ${total} atividades
-                                </span>
-                                <button class="btn btn-sm glass-button-sm" onclick="limparTodosFiltros()">
-                                    <i class="fas fa-times"></i>
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                `;
-                container.insertAdjacentHTML('afterbegin', statusHtml);
-            }
-        }
-
-        // Event listeners para filtros
-        function configurarEventosFiltros() {
-            // Filtro por status
-            document.getElementById('filtroStatus').addEventListener('change', function() {
-                filtrosAtivos.status = this.value;
-                console.log('Status mudou para:', this.value);
-                aplicarFiltros();
-            });
-
-            // Filtro por prioridade  
-            document.getElementById('filtroPrioridade').addEventListener('change', function() {
-                filtrosAtivos.prioridade = this.value;
-                console.log('Prioridade mudou para:', this.value);
-                aplicarFiltros();
-            });
-
-            // Filtro por busca (com debounce)
-            let timeoutBusca;
-            document.getElementById('buscar').addEventListener('input', function() {
-                clearTimeout(timeoutBusca);
-                timeoutBusca = setTimeout(() => {
-                    filtrosAtivos.busca = this.value.trim();
-                    console.log('Busca mudou para:', this.value);
-                    aplicarFiltros();
-                }, 300); // Aguarda 300ms após o usuário parar de digitar
-            });
-
-            // Limpar filtros com Enter na busca
-            document.getElementById('buscar').addEventListener('keydown', function(e) {
-                if (e.key === 'Enter') {
-                    e.preventDefault();
-                    aplicarFiltros();
-                }
-            });
-        }
-
-        // Função para limpar todos os filtros
-        function limparTodosFiltros() {
-            console.log('Limpando todos os filtros...');
-            
-            // Resetar formulários
-            document.getElementById('filtroStatus').value = '';
-            document.getElementById('filtroPrioridade').value = '';
-            document.getElementById('buscar').value = '';
-            
-            // Resetar filtros ativos
-            filtrosAtivos = {
-                status: '',
-                prioridade: '',
-                busca: ''
-            };
-            
-            // Mostrar todas as atividades
-            renderizarAtividades(atividadesOriginais);
-            
-            // Remover badge de status
-            const badgeExistente = document.querySelector('.filter-status-badge');
-            if (badgeExistente) {
-                badgeExistente.remove();
-            }
-            
-            // Feedback para o usuário
-            showNotification('🔄 Filtros limpos com sucesso!', 'success');
-        }
-
-        // Limpar filtros - Event listener para o botão
-        document.getElementById('limparFiltros').addEventListener('click', limparTodosFiltros);
-
-        // Carregar atividades ao carregar a página
-        document.addEventListener('DOMContentLoaded', function() {
-            console.log('🔄 Iniciando carregamento das atividades...');
-            carregarAtividades();
-        });
-
-        // Debug: Log dos filtros quando mudam
-        window.debugFiltros = function() {
-            console.log('🔍 Estado atual dos filtros:');
-            console.log('- Status:', filtrosAtivos.status || 'Todos');
-            console.log('- Prioridade:', filtrosAtivos.prioridade || 'Todas');
-            console.log('- Busca:', filtrosAtivos.busca || 'Nenhuma');
-            console.log('- Total de atividades originais:', atividadesOriginais.length);
-        };
-        
-        console.log('✨ Página de Atividades Neon carregada com sucesso!');
-        console.log('🎯 Sistema de Edição Animada ativado:');
-        console.log('   • Clique no botão ✏️ para editar uma atividade');
-        console.log('   • Use Ctrl+S para salvar rapidamente');
-        console.log('   • Use Esc para cancelar edição');
-        console.log('   • Use Ctrl+N para nova atividade');
-    </script>
-    <!-- Overlay de Exclusão estilo macOS -->
-    <div id="deleteOverlay" class="delete-overlay">
-        <div class="delete-container">
-            <!-- Título do overlay -->
-            <div class="delete-header">
-                <h4><i class="fas fa-trash-alt me-2"></i>Remover Atividade</h4>
-                <p class="text-muted">Arraste a atividade para a lixeira para excluí-la</p>
-            </div>
-            
-            <!-- Área principal -->
-            <div class="delete-main">
-                <!-- Card da atividade (esquerda) -->
-                <div class="delete-item">
-                    <div id="deleteAtividadeCard" class="delete-activity-card">
-                        <!-- Conteúdo será preenchido dinamicamente -->
-                    </div>
-                </div>
-                
-                <!-- Seta do meio -->
                 <div class="delete-arrow">
                     <i class="fas fa-arrow-right"></i>
                 </div>
-                
-                <!-- Lixeira (direita) -->
                 <div class="delete-target">
-                    <div id="deleteTrashIcon" class="delete-trash">
-                        <i class="fas fa-trash-alt"></i>
-                        <span>Lixeira</span>
+                    <div id="deleteTrash" class="delete-trash">
+                        <i class="fas fa-trash"></i>
+                        <span>Remover</span>
                     </div>
                 </div>
             </div>
-            
-            <!-- Botões de ação -->
-            <div class="delete-actions">
-                <button type="button" class="btn btn-secondary" onclick="hideDeleteOverlay()">
-                    <i class="fas fa-times me-1"></i>Cancelar
+        </div>
+        <div class="delete-actions">
+            <button class="btn btn-glass-secondary" onclick="closeDeleteModal()">
+                <i class="fas fa-times me-2"></i>Cancelar
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Modal de Criação -->
+<div class="modal fade" id="createModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content glass-modal">
+            <div class="modal-header glass-modal-header">
+                <h5 class="modal-title">
+                    <i class="fas fa-plus me-2"></i>Nova Atividade
+                </h5>
+                <button type="button" class="btn-close glass-btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="createForm">
+                    <div class="row g-3">
+                        <div class="col-12">
+                            <label class="form-label glass-text">Título</label>
+                            <input type="text" name="titulo" class="form-control glass-input" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label glass-text">Status</label>
+                            <select name="status" class="form-select glass-input">
+                                <option value="pendente">Pendente</option>
+                                <option value="em_andamento">Em Andamento</option>
+                                <option value="concluida">Concluída</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label glass-text">Prioridade</label>
+                            <select name="prioridade" class="form-select glass-input">
+                                <option value="baixa">Baixa</option>
+                                <option value="media">Média</option>
+                                <option value="alta">Alta</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label glass-text">Data de Início</label>
+                            <input type="date" name="data_inicio" class="form-control glass-input">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label glass-text">Data de Conclusão</label>
+                            <input type="date" name="data_fim" class="form-control glass-input">
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label glass-text">Descrição</label>
+                            <textarea name="descricao" class="form-control glass-input" rows="3"></textarea>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label glass-text">Progresso (%)</label>
+                            <input type="range" name="progresso" class="form-range" min="0" max="100" value="0">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label glass-text">Categoria</label>
+                            <select name="categoria_id" class="form-select glass-input">
+                                <option value="">Sem categoria</option>
+                                <option value="1">Trabalho</option>
+                                <option value="2">Estudos</option>
+                                <option value="3">Pessoal</option>
+                                <option value="4">Saúde</option>
+                                <option value="5">Lazer</option>
+                            </select>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer glass-modal-footer">
+                <button type="button" class="btn btn-glass-secondary" data-bs-dismiss="modal">
+                    <i class="fas fa-times me-2"></i>Cancelar
+                </button>
+                <button type="button" class="btn btn-glass" onclick="createAtividade()">
+                    <i class="fas fa-save me-2"></i>Criar Atividade
                 </button>
             </div>
         </div>
     </div>
+</div>
 
-    <script>
-        // Inicializar sistema de drag & drop quando a página carregar
-        document.addEventListener('DOMContentLoaded', function() {
-            console.log('DOM carregado, inicializando drag & drop...');
-            setupDragAndDrop();
-        });
-        
-        // Fechar overlay com Esc
-        document.addEventListener('keydown', function(e) {
-            if (e.key === 'Escape') {
-                hideDeleteOverlay();
+<script>
+// Inicialização segura das variáveis
+let atividades = [];
+let currentView = 'cards';
+let editingActivity = null;
+let deletingActivity = null;
+
+// Tentar carregar atividades do PHP, se disponível
+try {
+    @if(isset($atividades))
+        atividades = @json($atividades);
+    @endif
+} catch (e) {
+    console.log('Atividades não disponíveis via PHP, usando array vazio');
+    atividades = [];
+}
+
+// Inicialização
+document.addEventListener('DOMContentLoaded', function() {
+    // Testar conectividade do servidor
+    testServerConnection();
+    
+    // Só renderizar se as atividades foram carregadas com sucesso
+    if (atividades && atividades.length >= 0) {
+        renderAtividades(atividades);
+        updateStats();
+    } else {
+        // Se não há atividades, mostrar estado vazio
+        const container = document.getElementById('atividadesContainer');
+        if (container) {
+            container.innerHTML = `
+                <div class="glass-card text-center p-5">
+                    <div class="empty-state">
+                        <i class="fas fa-tasks fa-3x glass-text-muted mb-3"></i>
+                        <h4 class="glass-text">Nenhuma atividade encontrada</h4>
+                        <p class="glass-text-muted">Crie sua primeira atividade para começar!</p>
+                        <button class="btn btn-glass mt-3" onclick="openCreateModal()">
+                            <i class="fas fa-plus me-2"></i>Criar Atividade
+                        </button>
+                    </div>
+                </div>
+            `;
+        }
+    }
+    
+    // Event listeners para atalhos de teclado
+    document.addEventListener('keydown', function(e) {
+        if (e.ctrlKey && e.key === 's' && editingActivity) {
+            e.preventDefault();
+            saveEdit();
+        }
+        if (e.key === 'Escape') {
+            closeEditModal();
+            closeDeleteModal();
+        }
+    });
+    
+    // Drag and drop para remoção
+    setupDragAndDrop();
+});
+
+// Renderizar atividades
+function renderAtividades(atividades) {
+    const container = document.getElementById('atividadesContainer');
+    
+    if (atividades.length === 0) {
+        container.innerHTML = `
+            <div class="glass-card text-center p-5">
+                <div class="empty-state">
+                    <i class="fas fa-tasks fa-3x glass-text-muted mb-3"></i>
+                    <h4 class="glass-text">Nenhuma atividade encontrada</h4>
+                    <p class="glass-text-muted">Crie sua primeira atividade para começar!</p>
+                    <button class="btn btn-glass mt-3" onclick="openCreateModal()">
+                        <i class="fas fa-plus me-2"></i>Criar Atividade
+                    </button>
+                </div>
+            </div>
+        `;
+        return;
+    }
+    
+    if (currentView === 'cards') {
+        renderCardsView(atividades);
+    } else if (currentView === 'list') {
+        renderListView(atividades);
+    } else {
+        renderCompactView(atividades);
+    }
+}
+
+// Renderizar vista de cards
+function renderCardsView(atividades) {
+    const container = document.getElementById('atividadesContainer');
+    container.innerHTML = `
+        <div class="row">
+            ${atividades.map(atividade => `
+                <div class="col-lg-6 col-md-6 mb-4">
+                    <div class="activity-card" data-id="${atividade.id}">
+                        <div class="activity-content">
+                            <div class="activity-info">
+                                <div class="activity-header">
+                                    <h6 class="activity-title">${atividade.titulo}</h6>
+                                    <div class="activity-badges">
+                                        <span class="glass-badge status-${atividade.status}">${getStatusText(atividade.status)}</span>
+                                        <span class="glass-badge priority-${atividade.prioridade}">${getPriorityText(atividade.prioridade)}</span>
+                                    </div>
+                                </div>
+                                <div class="activity-description">
+                                    <p>${atividade.descricao || 'Sem descrição'}</p>
+                                </div>
+                                <div class="activity-meta">
+                                    <div class="meta-item">
+                                        <i class="fas fa-calendar"></i>
+                                        <span>${formatDate(atividade.created_at)}</span>
+                                    </div>
+                                    ${atividade.data_fim ? `
+                                        <div class="meta-item">
+                                            <i class="fas fa-flag-checkered"></i>
+                                            <span>${formatDate(atividade.data_fim)}</span>
+                                        </div>
+                                    ` : ''}
+                                </div>
+                                <div class="activity-progress">
+                                    <div class="progress">
+                                        <div class="progress-bar" style="width: ${atividade.progresso || 0}%"></div>
+                                    </div>
+                                    <small class="glass-text-muted">${atividade.progresso || 0}% concluído</small>
+                                </div>
+                            </div>
+                            <div class="activity-actions">
+                                <button class="btn btn-glass-secondary btn-sm" onclick="editActivity(${atividade.id})" title="Editar">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                                <button class="btn btn-glass-danger btn-sm" onclick="deleteActivity(${atividade.id})" title="Remover">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `).join('')}
+        </div>
+    `;
+}
+
+// Renderizar vista de lista
+function renderListView(atividades) {
+    const container = document.getElementById('atividadesContainer');
+    container.innerHTML = `
+        <div class="table-responsive">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Título</th>
+                        <th>Status</th>
+                        <th>Prioridade</th>
+                        <th>Progresso</th>
+                        <th>Data</th>
+                        <th>Ações</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    ${atividades.map(atividade => `
+                        <tr>
+                            <td>
+                                <strong>${atividade.titulo}</strong>
+                                <br><small class="glass-text-muted">${atividade.descricao || 'Sem descrição'}</small>
+                            </td>
+                            <td><span class="glass-badge status-${atividade.status}">${getStatusText(atividade.status)}</span></td>
+                            <td><span class="glass-badge priority-${atividade.prioridade}">${getPriorityText(atividade.prioridade)}</span></td>
+                            <td>
+                                <div class="progress">
+                                    <div class="progress-bar" style="width: ${atividade.progresso || 0}%"></div>
+                                </div>
+                                <small>${atividade.progresso || 0}%</small>
+                            </td>
+                            <td>${formatDate(atividade.created_at)}</td>
+                            <td>
+                                <button class="btn btn-glass-secondary btn-sm" onclick="editActivity(${atividade.id})" title="Editar">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                                <button class="btn btn-glass-danger btn-sm" onclick="deleteActivity(${atividade.id})" title="Remover">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </td>
+                        </tr>
+                    `).join('')}
+                </tbody>
+            </table>
+        </div>
+    `;
+}
+
+// Renderizar vista compacta
+function renderCompactView(atividades) {
+    const container = document.getElementById('atividadesContainer');
+    container.innerHTML = `
+        <div class="row">
+            ${atividades.map(atividade => `
+                <div class="col-12 mb-3">
+                    <div class="activity-card-compact" data-id="${atividade.id}">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div class="activity-info">
+                                <h6>${atividade.titulo}</h6>
+                                <div class="activity-badges">
+                                    <span class="glass-badge status-${atividade.status}">${getStatusText(atividade.status)}</span>
+                                    <span class="glass-badge priority-${atividade.prioridade}">${getPriorityText(atividade.prioridade)}</span>
+                                </div>
+                            </div>
+                            <div class="activity-actions">
+                                <button class="btn btn-glass-secondary btn-sm" onclick="editActivity(${atividade.id})" title="Editar">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                                <button class="btn btn-glass-danger btn-sm" onclick="deleteActivity(${atividade.id})" title="Remover">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `).join('')}
+        </div>
+    `;
+}
+
+// Aplicar filtros
+function applyFilters() {
+    const statusFilter = document.getElementById('statusFilter').value;
+    const priorityFilter = document.getElementById('priorityFilter').value;
+    const sortFilter = document.getElementById('sortFilter').value;
+    const periodFilter = document.getElementById('periodFilter').value;
+    const searchInput = document.getElementById('searchInput').value.toLowerCase();
+
+    let filtered = [...atividades];
+
+    // Aplicar filtros de período
+    if (periodFilter === 'today') {
+        const todayStart = new Date();
+        todayStart.setHours(0, 0, 0, 0);
+        filtered = filtered.filter(a => new Date(a.created_at) >= todayStart);
+    } else if (periodFilter === 'week') {
+        const today = new Date();
+        const startOfWeek = new Date(today);
+        startOfWeek.setDate(today.getDate() - today.getDay());
+        filtered = filtered.filter(a => new Date(a.created_at) >= startOfWeek);
+    } else if (periodFilter === 'month') {
+        const today = new Date();
+        const startOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+        filtered = filtered.filter(a => new Date(a.created_at) >= startOfMonth);
+    } else if (periodFilter === 'overdue') {
+        const today = new Date();
+        filtered = filtered.filter(a => a.data_fim && new Date(a.data_fim) < today && a.status !== 'concluida');
+    }
+
+    // Aplicar filtros de status
+    if (statusFilter) {
+        filtered = filtered.filter(a => a.status === statusFilter);
+    }
+
+    // Aplicar filtros de prioridade
+    if (priorityFilter) {
+        filtered = filtered.filter(a => a.prioridade === priorityFilter);
+    }
+
+    // Aplicar busca
+    if (searchInput) {
+        filtered = filtered.filter(a => 
+            a.titulo.toLowerCase().includes(searchInput) ||
+            (a.descricao && a.descricao.toLowerCase().includes(searchInput))
+        );
+    }
+
+    // Ordenar
+    filtered.sort((a, b) => {
+        switch (sortFilter) {
+            case 'created_at':
+                return new Date(b.created_at) - new Date(a.created_at);
+            case 'data_fim':
+                if (!a.data_fim && !b.data_fim) return 0;
+                if (!a.data_fim) return 1;
+                if (!b.data_fim) return -1;
+                return new Date(a.data_fim) - new Date(b.data_fim);
+            case 'prioridade':
+                const priorityOrder = { alta: 3, media: 2, baixa: 1 };
+                return priorityOrder[b.prioridade] - priorityOrder[a.prioridade];
+            case 'status':
+                const statusOrder = { pendente: 1, em_andamento: 2, concluida: 3 };
+                return statusOrder[a.status] - statusOrder[b.status];
+            case 'progresso':
+                return (b.progresso || 0) - (a.progresso || 0);
+            case 'titulo':
+                return a.titulo.localeCompare(b.titulo);
+            default:
+                return 0;
+        }
+    });
+
+    renderAtividades(filtered);
+    updateStats();
+}
+
+// Mudar vista
+function changeView() {
+    currentView = document.getElementById('viewFilter').value;
+    applyFilters();
+}
+
+// Atualizar estatísticas
+function updateStats() {
+    const total = atividades.length;
+    const pendentes = atividades.filter(a => a.status === 'pendente').length;
+    const emAndamento = atividades.filter(a => a.status === 'em_andamento').length;
+    const concluidas = atividades.filter(a => a.status === 'concluida').length;
+
+    document.getElementById('totalAtividades').textContent = total;
+    document.getElementById('pendentes').textContent = pendentes;
+    document.getElementById('emAndamento').textContent = emAndamento;
+    document.getElementById('concluidas').textContent = concluidas;
+}
+
+// Funções auxiliares
+function getStatusText(status) {
+    const statusMap = {
+        'pendente': 'Pendente',
+        'em_andamento': 'Em Andamento',
+        'concluida': 'Concluída'
+    };
+    return statusMap[status] || status;
+}
+
+function getPriorityText(priority) {
+    const priorityMap = {
+        'alta': 'Alta',
+        'media': 'Média',
+        'baixa': 'Baixa'
+    };
+    return priorityMap[priority] || priority;
+}
+
+function formatDate(dateString) {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('pt-BR');
+}
+
+// Funções de edição
+function editActivity(id) {
+    const atividade = atividades.find(a => a.id === id);
+    if (!atividade) return;
+
+    editingActivity = atividade;
+    
+    // Preencher formulário
+    document.getElementById('editId').value = atividade.id;
+    document.getElementById('editTitulo').value = atividade.titulo;
+    document.getElementById('editStatus').value = atividade.status;
+    document.getElementById('editPrioridade').value = atividade.prioridade;
+    document.getElementById('editDataInicio').value = atividade.data_inicio || '';
+    document.getElementById('editDataFim').value = atividade.data_fim || '';
+    document.getElementById('editDescricao').value = atividade.descricao || '';
+    document.getElementById('editProgresso').value = atividade.progresso || 0;
+    document.getElementById('editCategoria').value = atividade.categoria_id || '';
+    document.getElementById('progressoValue').textContent = (atividade.progresso || 0) + '%';
+
+    // Clonar card para highlight
+    const originalCard = document.querySelector(`[data-id="${id}"]`);
+    if (originalCard) {
+        const clonedCard = originalCard.cloneNode(true);
+        document.getElementById('editHighlightCard').innerHTML = '';
+        document.getElementById('editHighlightCard').appendChild(clonedCard);
+    }
+
+    // Mostrar overlay
+    document.getElementById('editOverlay').classList.add('show');
+    
+    // Animar entrada
+    setTimeout(() => {
+        document.getElementById('editHighlightCard').classList.add('highlight-glow');
+    }, 100);
+}
+
+function closeEditModal() {
+    document.getElementById('editOverlay').classList.remove('show');
+    document.getElementById('editHighlightCard').classList.remove('highlight-glow');
+    editingActivity = null;
+}
+
+function saveEdit() {
+    const formData = new FormData(document.getElementById('editForm'));
+    
+    fetch(`/update-activity/${editingActivity.id}`, {
+        method: 'PUT',
+        headers: {
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            titulo: formData.get('editTitulo'),
+            status: formData.get('editStatus'),
+            prioridade: formData.get('editPrioridade'),
+            data_inicio: formData.get('editDataInicio'),
+            data_fim: formData.get('editDataFim'),
+            descricao: formData.get('editDescricao'),
+            progresso: formData.get('editProgresso'),
+            categoria_id: formData.get('editCategoria')
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            // Atualizar atividade na lista
+            const index = atividades.findIndex(a => a.id === editingActivity.id);
+            if (index !== -1) {
+                atividades[index] = { ...atividades[index], ...data.atividade };
             }
-        });
+            
+            closeEditModal();
+            applyFilters();
+            
+            // Mostrar notificação
+            showNotification('Atividade atualizada com sucesso!', 'success');
+        }
+    })
+    .catch(error => {
+        console.error('Erro ao atualizar atividade:', error);
+        showNotification('Erro ao atualizar atividade', 'error');
+    });
+}
+
+// Funções de remoção
+function deleteActivity(id) {
+    const atividade = atividades.find(a => a.id === id);
+    if (!atividade) return;
+
+    deletingActivity = atividade;
+    
+    // Clonar card para highlight
+    const originalCard = document.querySelector(`[data-id="${id}"]`);
+    if (originalCard) {
+        const clonedCard = originalCard.cloneNode(true);
+        document.getElementById('deleteActivityCard').innerHTML = '';
+        document.getElementById('deleteActivityCard').appendChild(clonedCard);
         
-        // Debug: Verificar se elementos existem após carregamento
+        // Configurar drag and drop após clonar o card
         setTimeout(() => {
-            const overlay = document.getElementById('deleteOverlay');
-            const card = document.getElementById('deleteAtividadeCard');
-            const trash = document.getElementById('deleteTrashIcon');
-            
-            console.log('Verificação dos elementos:');
-            console.log('- Overlay:', overlay ? 'OK' : 'NÃO ENCONTRADO');
-            console.log('- Card:', card ? 'OK' : 'NÃO ENCONTRADO');
-            console.log('- Trash:', trash ? 'OK' : 'NÃO ENCONTRADO');
-            
-            // Teste simples - criar botão de teste
-            if (window.location.search.includes('debug=1')) {
-                const testBtn = document.createElement('button');
-                testBtn.innerHTML = '🧪 Teste Overlay';
-                testBtn.style.position = 'fixed';
-                testBtn.style.top = '10px';
-                testBtn.style.right = '10px';
-                testBtn.style.zIndex = '9999';
-                testBtn.style.backgroundColor = '#ff0000';
-                testBtn.style.color = 'white';
-                testBtn.style.border = 'none';
-                testBtn.style.padding = '10px';
-                testBtn.style.borderRadius = '5px';
-                testBtn.onclick = function() {
-                    console.log('Teste: criando atividade fake...');
-                    const atividadeFake = {
-                        id: 999,
-                        titulo: 'Atividade de Teste',
-                        descricao: 'Esta é uma atividade de teste para verificar o overlay',
-                        status: 'pendente',
-                        prioridade: 'alta'
-                    };
-                    showDeleteOverlay(atividadeFake);
-                };
-                document.body.appendChild(testBtn);
-                console.log('Botão de teste criado! Adicione ?debug=1 na URL para ver.');
-            }
-        }, 1000);
-    </script>
+            setupDragAndDrop();
+        }, 100);
+    }
 
-</body>
-</html> 
+    // Mostrar overlay
+    document.getElementById('deleteOverlay').classList.add('show');
+    
+    // Adicionar pulso na seta após a animação de entrada
+    setTimeout(() => {
+        const arrow = document.querySelector('.delete-arrow');
+        if (arrow) {
+            arrow.classList.add('pulse');
+        }
+    }, 800);
+    
+    console.log('Overlay de remoção aberto para atividade:', atividade.titulo);
+}
+
+function closeDeleteModal() {
+    document.getElementById('deleteOverlay').classList.remove('show');
+    deletingActivity = null;
+    
+    // Limpar classes de destaque da lixeira
+    const deleteTrash = document.getElementById('deleteTrash');
+    if (deleteTrash) {
+        deleteTrash.classList.remove('active', 'highlight');
+    }
+    
+    // Remover pulso da seta
+    const arrow = document.querySelector('.delete-arrow');
+    if (arrow) {
+        arrow.classList.remove('pulse');
+    }
+    
+    console.log('Overlay de remoção fechado');
+}
+
+function setupDragAndDrop() {
+    const deleteCard = document.getElementById('deleteActivityCard');
+    const deleteTrash = document.getElementById('deleteTrash');
+    
+    if (deleteCard && deleteTrash) {
+        // Tornar o card arrastável
+        deleteCard.draggable = true;
+        
+        deleteCard.addEventListener('dragstart', function(e) {
+            e.dataTransfer.setData('text/plain', '');
+            this.classList.add('dragging');
+            console.log('Iniciando arrasto do card');
+        });
+        
+        deleteCard.addEventListener('dragend', function(e) {
+            this.classList.remove('dragging');
+            console.log('Finalizando arrasto do card');
+        });
+        
+        deleteTrash.addEventListener('dragover', function(e) {
+            e.preventDefault();
+            this.classList.add('active');
+            console.log('Arrasto sobre a lixeira');
+        });
+        
+        deleteTrash.addEventListener('dragleave', function(e) {
+            this.classList.remove('active');
+            console.log('Saindo da lixeira');
+        });
+        
+        deleteTrash.addEventListener('drop', function(e) {
+            e.preventDefault();
+            this.classList.remove('active');
+            this.classList.add('highlight');
+            
+            console.log('Soltando na lixeira - confirmando remoção');
+            
+            // Confirmar remoção
+            if (confirm('Tem certeza que deseja remover esta atividade?')) {
+                removeActivity(deletingActivity.id);
+            } else {
+                this.classList.remove('highlight');
+            }
+        });
+        
+        // Adicionar evento de clique na lixeira como alternativa
+        deleteTrash.addEventListener('click', function() {
+            if (deletingActivity) {
+                this.classList.add('highlight');
+                if (confirm('Tem certeza que deseja remover esta atividade?')) {
+                    removeActivity(deletingActivity.id);
+                } else {
+                    this.classList.remove('highlight');
+                }
+            }
+        });
+    }
+}
+
+function removeActivity(id) {
+    console.log('Iniciando remoção da atividade:', id);
+    
+    // Adicionar efeito visual de remoção
+    const deleteCard = document.getElementById('deleteActivityCard');
+    if (deleteCard) {
+        deleteCard.style.transform = 'scale(0.8) rotate(5deg)';
+        deleteCard.style.opacity = '0.5';
+        deleteCard.style.transition = 'all 0.3s ease';
+    }
+    
+    fetch(`/delete-activity/${id}`, {
+        method: 'DELETE',
+        headers: {
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            // Remover da lista
+            atividades = atividades.filter(a => a.id !== id);
+            
+            // Efeito de sucesso na lixeira
+            const deleteTrash = document.getElementById('deleteTrash');
+            if (deleteTrash) {
+                deleteTrash.style.transform = 'scale(1.2)';
+                deleteTrash.style.background = 'rgba(76, 175, 80, 0.3)';
+                deleteTrash.style.borderColor = '#4caf50';
+                setTimeout(() => {
+                    deleteTrash.style.transform = 'scale(1)';
+                    deleteTrash.style.background = '';
+                    deleteTrash.style.borderColor = '';
+                }, 500);
+            }
+            
+            setTimeout(() => {
+                closeDeleteModal();
+                applyFilters();
+                
+                // Mostrar notificação
+                showNotification('Atividade removida com sucesso!', 'success');
+            }, 300);
+        } else {
+            console.error('Erro na resposta:', data.message);
+            showNotification('Erro ao remover atividade: ' + data.message, 'error');
+            
+            // Restaurar card se houver erro
+            if (deleteCard) {
+                deleteCard.style.transform = '';
+                deleteCard.style.opacity = '';
+            }
+        }
+    })
+    .catch(error => {
+        console.error('Erro ao remover atividade:', error);
+        showNotification('Erro ao remover atividade', 'error');
+        
+        // Restaurar card se houver erro
+        if (deleteCard) {
+            deleteCard.style.transform = '';
+            deleteCard.style.opacity = '';
+        }
+    });
+}
+
+// Funções de criação
+function openCreateModal() {
+    const modal = new bootstrap.Modal(document.getElementById('createModal'));
+    modal.show();
+    
+    // Limpar formulário ao abrir
+    document.getElementById('createForm').reset();
+    
+    // Focar no primeiro campo
+    setTimeout(() => {
+        const tituloInput = document.querySelector('#createForm input[name="titulo"]');
+        if (tituloInput) {
+            tituloInput.focus();
+        }
+    }, 500);
+}
+
+function createAtividade() {
+    const formData = new FormData(document.getElementById('createForm'));
+    
+    // Validar campos obrigatórios
+    const titulo = formData.get('titulo');
+    if (!titulo || titulo.trim() === '') {
+        alert('Por favor, preencha o título da atividade');
+        return;
+    }
+    
+    // Verificar se o usuário está autenticado
+    const csrfToken = document.querySelector('meta[name="csrf-token"]');
+    if (!csrfToken) {
+        alert('Erro de autenticação. Por favor, faça login novamente.');
+        window.location.href = '/login';
+        return;
+    }
+    
+    fetch('/save-activity', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+        },
+        body: JSON.stringify({
+            titulo: titulo,
+            status: formData.get('status'),
+            prioridade: formData.get('prioridade'),
+            data_inicio: formData.get('data_inicio'),
+            data_fim: formData.get('data_fim'),
+            descricao: formData.get('descricao'),
+            progresso: formData.get('progresso'),
+            categoria_id: formData.get('categoria_id')
+        })
+    })
+    .then(response => {
+        if (!response.ok) {
+            if (response.status === 404) {
+                throw new Error('Rota não encontrada. Verifique se o servidor está rodando e as rotas estão configuradas.');
+            } else if (response.status === 405) {
+                throw new Error('Método não permitido. Verifique se a rota está configurada corretamente.');
+            } else if (response.status === 401) {
+                throw new Error('Não autorizado. Por favor, faça login novamente.');
+            } else if (response.status === 403) {
+                throw new Error('Acesso negado. Verifique suas permissões.');
+            } else {
+                throw new Error(`Erro HTTP ${response.status}: ${response.statusText}`);
+            }
+        }
+        return response.json();
+    })
+    .then(data => {
+        if (data.success) {
+            // Adicionar à lista
+            atividades.push(data.atividade);
+            
+            // Fechar modal
+            const modal = bootstrap.Modal.getInstance(document.getElementById('createModal'));
+            if (modal) {
+                modal.hide();
+            }
+            
+            // Limpar formulário
+            document.getElementById('createForm').reset();
+            
+            // Atualizar lista
+            renderAtividades(atividades);
+            updateStats();
+            
+            // Mostrar notificação
+            showNotification('Atividade criada com sucesso!', 'success');
+        } else {
+            throw new Error(data.message || 'Erro ao criar atividade');
+        }
+    })
+    .catch(error => {
+        console.error('Erro ao criar atividade:', error);
+        showNotification('Erro ao criar atividade: ' + error.message, 'error');
+    });
+}
+
+// Teste de conectividade do servidor
+function testServerConnection() {
+    fetch('/test', {
+        method: 'GET',
+        headers: {
+            'Accept': 'application/json',
+        }
+    })
+    .then(response => {
+        if (!response.ok) {
+            console.warn('Servidor pode não estar funcionando corretamente');
+        }
+    })
+    .catch(error => {
+        console.warn('Erro de conectividade com o servidor:', error);
+        showNotification('Aviso: Servidor pode não estar funcionando corretamente', 'info');
+    });
+}
+
+// Notificações
+function showNotification(message, type) {
+    // Criar elemento de notificação
+    const notification = document.createElement('div');
+    notification.className = `glass-notification ${type}`;
+    notification.innerHTML = `
+        <div class="glass-card p-3">
+            <div class="d-flex align-items-center">
+                <i class="fas ${type === 'success' ? 'fa-check-circle text-success' : 'fa-exclamation-circle text-danger'} me-2"></i>
+                <span class="glass-text">${message}</span>
+            </div>
+        </div>
+    `;
+    
+    // Adicionar ao body
+    document.body.appendChild(notification);
+    
+    // Remover após 3 segundos
+    setTimeout(() => {
+        if (notification.parentNode) {
+            notification.parentNode.removeChild(notification);
+        }
+    }, 3000);
+}
+
+// Event listeners
+document.getElementById('editProgresso').addEventListener('input', function() {
+    document.getElementById('progressoValue').textContent = this.value + '%';
+});
+</script>
+@endsection 

@@ -10,6 +10,7 @@ class Profile extends Model
     protected $fillable = [
         'user_id',
         'username',
+        'nickname',
         'bio',
         'profession',
         'mood',
@@ -19,6 +20,7 @@ class Profile extends Model
         'fortune_cookie_message',
         'profile_image',
         'background_image',
+        'background_image_url',
         'is_public'
     ];
 

@@ -11,17 +11,16 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('todo_tags', function (Blueprint $table) {
-            $table->id();
-            $table->timestamps();
+        Schema::table('atividades', function (Blueprint $table) {
+            $table->string('categoria')->nullable()->after('progresso');
         });
     }
 
-    /**
-     * Reverse the migrations.
-     */
+    
     public function down(): void
     {
-        Schema::dropIfExists('todo_tags');
+        Schema::table('atividades', function (Blueprint $table) {
+            $table->dropColumn('categoria');
+        });
     }
 };

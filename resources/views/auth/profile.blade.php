@@ -1,120 +1,8 @@
-<!DOCTYPE html>
-<html lang="pt-BR">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Perfil - DashMEBoard Neon</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-    <link href="{{ asset('css/glassmorphism.css') }}" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-</head>
-<body class="dashboard-background">
-    <!-- Navbar -->
-    <nav class="navbar navbar-expand-lg glass-navbar">
-        <div class="container">
-            <a class="navbar-brand" href="{{ route('dashboard') }}">
-                <i class="fas fa-tasks me-2 glass-icon"></i>DashMEBoard
-            </a>
-            
-            <div class="d-flex align-items-center ms-auto">
-                <!-- Barrinha única - Menu dropdown -->
-                <div class="animated-bars">
-                    <div class="animated-bar" onclick="toggleDropdownMenu()">
-                        <div class="bar-line"></div>
-                        <div class="bar-line"></div>
-                    </div>
-                </div>
-                
-                <!-- Menu do usuário -->
-                <div class="navbar-nav ms-3">
-                    <div class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown">
-                            <i class="fas fa-user me-1 glass-icon"></i>{{ $user->name }}
-                        </a>
-                        <ul class="dropdown-menu">
-                            <li><a class="dropdown-item" href="{{ route('dashboard') }}">
-                                <i class="fas fa-tachometer-alt me-2"></i>Dashboard
-                            </a></li>
-                            <li><a class="dropdown-item" href="{{ route('atividades') }}">
-                                <i class="fas fa-tasks me-2"></i>Atividades
-                            </a></li>
-                            <li><hr class="dropdown-divider"></li>
-                            <li>
-                                <form method="POST" action="{{ route('logout') }}" class="d-inline">
-                                    @csrf
-                                    <button type="submit" class="dropdown-item">
-                                        <i class="fas fa-sign-out-alt me-2"></i>Sair
-                                    </button>
-                                </form>
-                            </li>
-                        </ul>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </nav>
+@extends('layouts.app')
 
-    <!-- Fullscreen Menu -->
-    <div class="dropdown-menu-overlay" id="dropdownMenuOverlay">
-        <div class="dropdown-menu-content">
-            <div class="fullscreen-close-btn" onclick="closeDropdownMenu()"></div>
-            <div class="fullscreen-menu-layout">
-                <!-- Seção do Relógio Gigante -->
-                <div class="fullscreen-clock-section">
-                    <div class="giant-clock-label">Hora Atual</div>
-                    <div class="fullscreen-giant-clock" id="dropdownClock"></div>
-                    <div class="giant-clock-date" id="dropdownDate"></div>
-                </div>
-                
-                <!-- Seção dos Links de Navegação -->
-                <div class="fullscreen-navigation-section">
-                    <h2 class="navigation-title">Navegação</h2>
-                    <div class="navigation-links">
-                        <a href="{{ route('dashboard') }}" class="nav-link-item">
-                            <i class="fas fa-home" style="color: #06b6d4;"></i>
-                            <div class="nav-link-content">
-                                <div class="nav-link-title">Dashboard</div>
-                                <div class="nav-link-description">Voltar ao painel principal</div>
-                            </div>
-                        </a>
-                        
-                        <a href="{{ route('profile') }}" class="nav-link-item">
-                            <i class="fas fa-user" style="color: #8b5cf6;"></i>
-                            <div class="nav-link-content">
-                                <div class="nav-link-title">Meu Perfil</div>
-                                <div class="nav-link-description">Página atual</div>
-                            </div>
-                        </a>
-                        
-                        <a href="{{ route('atividades') }}" class="nav-link-item">
-                            <i class="fas fa-tasks" style="color: #10b981;"></i>
-                            <div class="nav-link-content">
-                                <div class="nav-link-title">Atividades</div>
-                                <div class="nav-link-description">Gerenciar suas tarefas</div>
-                            </div>
-                        </a>
-                        
-                        <a href="{{ route('dashboard') }}#projetos" class="nav-link-item">
-                            <i class="fas fa-folder" style="color: #f59e0b;"></i>
-                            <div class="nav-link-content">
-                                <div class="nav-link-title">Projetos</div>
-                                <div class="nav-link-description">Organize seus projetos</div>
-                            </div>
-                        </a>
-                        
-                        <a href="{{ route('dashboard') }}#estatisticas" class="nav-link-item">
-                            <i class="fas fa-chart-pie" style="color: #ef4444;"></i>
-                            <div class="nav-link-content">
-                                <div class="nav-link-title">Estatísticas</div>
-                                <div class="nav-link-description">Analise sua produtividade</div>
-                            </div>
-                        </a>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
+@section('title', 'Perfil - DashMEBoard Neon')
+
+@section('content')
 
     <!-- Conteúdo Principal -->
     <div class="container my-4">
@@ -498,5 +386,217 @@
 
         console.log('✨ Página de Perfil carregada com sucesso!');
     </script>
-</body>
-</html> 
+@endsection
+
+@section('scripts')
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    // Função para atualizar o relógio em tempo real
+    function updateClock() {
+        const now = new Date();
+        const hours = String(now.getHours()).padStart(2, '0');
+        const minutes = String(now.getMinutes()).padStart(2, '0');
+        const seconds = String(now.getSeconds()).padStart(2, '0');
+        const timeString = `${hours}:${minutes}:${seconds}`;
+        
+        // Atualizar relógio gigante do fullscreen
+        const dropdownClockElement = document.getElementById('dropdownClock');
+        if (dropdownClockElement) {
+            dropdownClockElement.textContent = timeString;
+        }
+        
+        // Atualizar data
+        const dropdownDateElement = document.getElementById('dropdownDate');
+        if (dropdownDateElement) {
+            const options = { 
+                weekday: 'long', 
+                year: 'numeric', 
+                month: 'long', 
+                day: 'numeric' 
+            };
+            const dateString = now.toLocaleDateString('pt-BR', options);
+            dropdownDateElement.textContent = dateString;
+        }
+    }
+    
+    // Atualizar o relógio a cada segundo
+    setInterval(updateClock, 1000);
+    updateClock(); // Chamar imediatamente ao carregar a página
+    
+    // Estado do dropdown menu
+    let dropdownVisible = false;
+    
+    // Função para alternar o dropdown menu
+    function toggleDropdownMenu() {
+        const dropdownOverlay = document.getElementById('dropdownMenuOverlay');
+        
+        if (dropdownVisible) {
+            closeDropdownMenu();
+        } else {
+            openDropdownMenu();
+        }
+    }
+    
+    // Função para abrir o dropdown menu
+    function openDropdownMenu() {
+        const dropdownOverlay = document.getElementById('dropdownMenuOverlay');
+        if (dropdownOverlay) {
+            dropdownOverlay.classList.add('show');
+            dropdownVisible = true;
+        }
+    }
+    
+    // Função para fechar o dropdown menu
+    function closeDropdownMenu() {
+        const dropdownOverlay = document.getElementById('dropdownMenuOverlay');
+        if (dropdownOverlay) {
+            dropdownOverlay.classList.remove('show');
+            dropdownVisible = false;
+        }
+    }
+    
+    // Função para atualizar página
+    function refreshPage() {
+        closeDropdownMenu();
+        location.reload();
+    }
+    
+    // Fechar dropdown ao pressionar ESC
+    document.addEventListener('keydown', function(event) {
+        if (event.key === 'Escape') {
+            closeDropdownMenu();
+        }
+    });
+    
+    // Fechar dropdown ao clicar fora
+    document.addEventListener('click', function(event) {
+        const dropdownOverlay = document.getElementById('dropdownMenuOverlay');
+        const animatedBar = document.querySelector('.animated-bar');
+        
+        if (dropdownVisible && 
+            !dropdownOverlay.contains(event.target) && 
+            !animatedBar.contains(event.target)) {
+            closeDropdownMenu();
+        }
+    });
+
+    // Configuração dos gráficos
+    const chartOptions = {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+            legend: {
+                display: false
+            }
+        }
+    };
+
+    // Gráfico de Prioridades (Doughnut)
+    const prioridadeCtx = document.getElementById('prioridadeChart').getContext('2d');
+    new Chart(prioridadeCtx, {
+        type: 'doughnut',
+        data: {
+            labels: ['Alta', 'Média', 'Baixa'],
+            datasets: [{
+                data: [{{ $prioridadeAlta }}, {{ $prioridadeMedia }}, {{ $prioridadeBaixa }}],
+                backgroundColor: [
+                    'rgba(239, 68, 68, 0.8)',
+                    'rgba(245, 158, 11, 0.8)', 
+                    'rgba(6, 182, 212, 0.8)'
+                ],
+                borderColor: [
+                    'rgba(239, 68, 68, 1)',
+                    'rgba(245, 158, 11, 1)',
+                    'rgba(6, 182, 212, 1)'
+                ],
+                borderWidth: 2
+            }]
+        },
+        options: {
+            ...chartOptions,
+            cutout: '60%'
+        }
+    });
+
+    // Gráfico de Status (Pie)
+    const statusCtx = document.getElementById('statusChart').getContext('2d');
+    new Chart(statusCtx, {
+        type: 'pie',
+        data: {
+            labels: ['Concluída', 'Em Andamento', 'Pendente'],
+            datasets: [{
+                data: [{{ $statusConcluida }}, {{ $statusEmAndamento }}, {{ $statusPendente }}],
+                backgroundColor: [
+                    'rgba(16, 185, 129, 0.8)',
+                    'rgba(245, 158, 11, 0.8)',
+                    'rgba(107, 114, 128, 0.8)'
+                ],
+                borderColor: [
+                    'rgba(16, 185, 129, 1)',
+                    'rgba(245, 158, 11, 1)',
+                    'rgba(107, 114, 128, 1)'
+                ],
+                borderWidth: 2
+            }]
+        },
+        options: chartOptions
+    });
+
+    // Gráfico de Atividades por Dia (Line)
+    const atividadesPorDiaCtx = document.getElementById('atividadesPorDiaChart').getContext('2d');
+    const diasData = @json($atividadesPorDia);
+    
+    new Chart(atividadesPorDiaCtx, {
+        type: 'line',
+        data: {
+            labels: diasData.map(item => item.data),
+            datasets: [{
+                label: 'Atividades Criadas',
+                data: diasData.map(item => item.count),
+                borderColor: 'rgba(6, 182, 212, 1)',
+                backgroundColor: 'rgba(6, 182, 212, 0.1)',
+                borderWidth: 3,
+                fill: true,
+                tension: 0.4,
+                pointBackgroundColor: 'rgba(6, 182, 212, 1)',
+                pointBorderColor: 'rgba(255, 255, 255, 1)',
+                pointBorderWidth: 2,
+                pointRadius: 6
+            }]
+        },
+        options: {
+            ...chartOptions,
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        stepSize: 1,
+                        color: 'rgba(255, 255, 255, 0.7)'
+                    },
+                    grid: {
+                        color: 'rgba(255, 255, 255, 0.1)'
+                    }
+                },
+                x: {
+                    ticks: {
+                        color: 'rgba(255, 255, 255, 0.7)'
+                    },
+                    grid: {
+                        color: 'rgba(255, 255, 255, 0.1)'
+                    }
+                }
+            },
+            plugins: {
+                legend: {
+                    display: true,
+                    labels: {
+                        color: 'rgba(255, 255, 255, 0.8)'
+                    }
+                }
+            }
+        }
+    });
+
+    console.log('✨ Página de Perfil carregada com sucesso!');
+</script>
+@endsection 

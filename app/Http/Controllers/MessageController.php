@@ -13,9 +13,9 @@ class MessageController extends Controller
     {
         $user = Auth::user();
         
-        $messages = Message::where('to_user_id', $user->id)
-            ->orWhere('from_user_id', $user->id)
-            ->with(['fromUser', 'toUser'])
+        $messages = Message::where('receiver_id', $user->id)
+            ->orWhere('sender_id', $user->id)
+            ->with(['sender', 'receiver'])
             ->orderBy('created_at', 'desc')
             ->paginate(20);
         
@@ -29,13 +29,13 @@ class MessageController extends Controller
         $message = Message::where(function($query) use ($user, $id) {
             $query->where('id', $id)
                   ->where(function($q) use ($user) {
-                      $q->where('from_user_id', $user->id)
-                        ->orWhere('to_user_id', $user->id);
+                      $q->where('sender_id', $user->id)
+                        ->orWhere('receiver_id', $user->id);
                   });
-        })->with(['fromUser', 'toUser'])->firstOrFail();
+        })->with(['sender', 'receiver'])->firstOrFail();
         
         // Marcar como lida se for destinatário
-        if ($message->to_user_id === $user->id && !$message->is_read) {
+        if ($message->receiver_id === $user->id && !$message->is_read) {
             $message->update([
                 'is_read' => true,
                 'read_at' => now()
@@ -72,8 +72,8 @@ class MessageController extends Controller
         }
         
         Message::create([
-            'from_user_id' => $user->id,
-            'to_user_id' => $request->to_user_id,
+            'sender_id' => $user->id,
+            'receiver_id' => $request->to_user_id,
             'message' => $request->message
         ]);
         
@@ -90,19 +90,19 @@ class MessageController extends Controller
         
         $messages = Message::where(function($query) use ($user, $otherUser) {
             $query->where(function($q) use ($user, $otherUser) {
-                $q->where('from_user_id', $user->id)
-                  ->where('to_user_id', $otherUser->id);
+                $q->where('sender_id', $user->id)
+                  ->where('receiver_id', $otherUser->id);
             })->orWhere(function($q) use ($user, $otherUser) {
-                $q->where('from_user_id', $otherUser->id)
-                  ->where('to_user_id', $user->id);
+                $q->where('sender_id', $otherUser->id)
+                  ->where('receiver_id', $user->id);
             });
-        })->with(['fromUser', 'toUser'])
+        })->with(['sender', 'receiver'])
           ->orderBy('created_at', 'asc')
           ->get();
         
         // Marcar mensagens recebidas como lidas
-        Message::where('from_user_id', $otherUser->id)
-            ->where('to_user_id', $user->id)
+        Message::where('sender_id', $otherUser->id)
+            ->where('receiver_id', $user->id)
             ->where('is_read', false)
             ->update([
                 'is_read' => true,
@@ -115,10 +115,87 @@ class MessageController extends Controller
     public function unreadCount()
     {
         $user = Auth::user();
-        $count = Message::where('to_user_id', $user->id)
+        $count = Message::where('receiver_id', $user->id)
             ->where('is_read', false)
             ->count();
         
         return response()->json(['count' => $count]);
+    }
+
+    public function searchUsers(Request $request)
+    {
+        $query = $request->get('q');
+        $user = Auth::user();
+        
+        if (!$user) {
+            return response()->json(['users' => []]);
+        }
+        
+        if (empty($query)) {
+            return response()->json(['users' => []]);
+        }
+        
+        $users = User::where('id', '!=', $user->id) // Excluir o usuário atual
+            ->where(function($q) use ($query) {
+                $q->where('name', 'like', "%{$query}%")
+                  ->orWhere('email', 'like', "%{$query}%")
+                  ->orWhereHas('profile', function($profileQuery) use ($query) {
+                      $profileQuery->where('username', 'like', "%{$query}%")
+                                  ->orWhere('profession', 'like', "%{$query}%")
+                                  ->orWhere('bio', 'like', "%{$query}%");
+                  });
+            })
+            ->with('profile')
+            ->limit(10)
+            ->get()
+            ->map(function($user) {
+                return [
+                    'id' => $user->id,
+                    'name' => $user->name,
+                    'email' => $user->email,
+                    'username' => $user->profile ? $user->profile->username : null,
+                    'profession' => $user->profile ? $user->profile->profession : null,
+                    'profile_image' => $user->profile ? $user->profile->profile_image_url : null,
+                ];
+            });
+        
+        return response()->json(['users' => $users]);
+    }
+
+
+
+    public function conversations()
+    {
+        $user = Auth::user();
+        
+        // Buscar todas as conversas do usuário
+        $conversations = Message::select('*')
+            ->where(function($query) use ($user) {
+                $query->where('sender_id', $user->id)
+                      ->orWhere('receiver_id', $user->id);
+            })
+            ->with(['sender', 'receiver'])
+            ->orderBy('created_at', 'desc')
+            ->get()
+            ->groupBy(function($message) use ($user) {
+                // Agrupar por o outro usuário da conversa
+                return $message->sender_id === $user->id ? $message->receiver_id : $message->sender_id;
+            })
+            ->map(function($messages) use ($user) {
+                $latestMessage = $messages->first();
+                $otherUser = $latestMessage->sender_id === $user->id ? $latestMessage->receiver : $latestMessage->sender;
+                
+                return [
+                    'user' => $otherUser,
+                    'latest_message' => $latestMessage,
+                    'unread_count' => $messages->where('receiver_id', $user->id)->where('is_read', false)->count(),
+                    'total_messages' => $messages->count(),
+                    'last_activity' => $latestMessage->created_at
+                ];
+            })
+            ->sortByDesc('last_activity')
+            ->values();
+        
+        return view('messages.conversations', compact('conversations'));
     }
 }

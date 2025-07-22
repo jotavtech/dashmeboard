@@ -1,98 +1,5 @@
 @extends('layouts.app')
 
-@section('styles')
-<style>
-/* Estilos para os filtros de busca */
-.search-filters-container {
-    background: transparent !important;
-    border: 1px solid rgba(255, 255, 255, 0.2) !important;
-    backdrop-filter: blur(10px);
-}
-
-.search-input-group {
-    background: transparent;
-    border: 1px solid rgba(255, 255, 255, 0.3);
-    border-radius: 8px;
-    transition: all 0.3s ease;
-}
-
-.search-input-group:focus-within {
-    border-color: rgba(255, 255, 255, 0.6);
-    box-shadow: 0 0 15px rgba(255, 255, 255, 0.1);
-}
-
-.search-input-group .input-group-text {
-    background: transparent;
-    border: none;
-    color: rgba(255, 255, 255, 0.8);
-}
-
-.search-input-group .form-control {
-    background: transparent;
-    border: none;
-    color: rgba(255, 255, 255, 0.9);
-    box-shadow: none;
-}
-
-.search-input-group .form-control::placeholder {
-    color: rgba(255, 255, 255, 0.5);
-}
-
-.search-input-group .form-control:focus {
-    background: transparent;
-    border: none;
-    color: rgba(255, 255, 255, 0.9);
-    box-shadow: none;
-}
-
-.search-select {
-    background: transparent;
-    border: 1px solid rgba(255, 255, 255, 0.3);
-    border-radius: 8px;
-    color: rgba(255, 255, 255, 0.9);
-    transition: all 0.3s ease;
-}
-
-.search-select:focus {
-    background: transparent;
-    border-color: rgba(255, 255, 255, 0.6);
-    box-shadow: 0 0 15px rgba(255, 255, 255, 0.1);
-    color: rgba(255, 255, 255, 0.9);
-}
-
-.search-select option {
-    background: rgba(0, 0, 0, 0.8);
-    color: rgba(255, 255, 255, 0.9);
-}
-
-.search-button {
-    background: transparent;
-    border: 1px solid rgba(255, 255, 255, 0.3);
-    border-radius: 8px;
-    color: rgba(255, 255, 255, 0.9);
-    transition: all 0.3s ease;
-}
-
-.search-button:hover {
-    background: rgba(255, 255, 255, 0.1);
-    border-color: rgba(255, 255, 255, 0.5);
-    color: rgba(255, 255, 255, 1);
-}
-
-/* Responsividade */
-@media (max-width: 768px) {
-    .search-filters-row {
-        flex-direction: column;
-        gap: 1rem;
-    }
-    
-    .search-filters-row > div {
-        min-width: 100% !important;
-    }
-}
-</style>
-@endsection
-
 @section('content')
 <div class="container my-4 glass-container">
     <div class="main-content-card">
@@ -100,43 +7,49 @@
         <div class="row mb-4">
             <div class="col-md-8">
                 <h1 class="h3 glass-text mb-2">
-                    <i class="fas fa-users me-2"></i>Descobrir Perfis
+                    <i class="fas fa-search me-2"></i>Resultados da Busca
                 </h1>
-                <p class="glass-text-muted mb-0">Conecte-se com outros usuários e descubra perfis interessantes</p>
+                <p class="glass-text-muted mb-0">
+                    @if($query)
+                        Resultados para: <strong>"{{ $query }}"</strong>
+                    @else
+                        Todos os perfis disponíveis
+                    @endif
+                </p>
             </div>
             <div class="col-md-4 text-md-end">
-                <a href="{{ route('profiles.my-profile') }}" class="btn btn-glass">
-                    <i class="fas fa-user me-2"></i>Meu Perfil
+                <a href="{{ route('profiles.index') }}" class="btn btn-glass">
+                    <i class="fas fa-arrow-left me-2"></i>Voltar
                 </a>
             </div>
         </div>
 
         <!-- Busca e Filtros -->
-        <div class="glass-card mb-4 search-filters-container">
+        <div class="glass-card mb-4">
             <form action="{{ route('profiles.search') }}" method="GET">
-                <div class="d-flex align-items-center gap-3 search-filters-row">
-                    <div class="flex-grow-1">
-                        <div class="input-group search-input-group">
-                            <span class="input-group-text">
+                <div class="row g-3">
+                    <div class="col-lg-8 col-md-8">
+                        <div class="input-group">
+                            <span class="input-group-text glass-input">
                                 <i class="fas fa-search"></i>
                             </span>
-                            <input type="text" name="q" class="form-control" 
+                            <input type="text" name="q" class="form-control glass-input" 
                                    placeholder="Buscar por nome, apelido, profissão ou bio..." 
-                                   value="{{ request('q') }}">
+                                   value="{{ $query }}">
                         </div>
                     </div>
-                    <div style="min-width: 200px;">
-                        <select class="form-select search-select" name="profession">
+                    <div class="col-lg-2 col-md-4">
+                        <select class="form-select glass-input" name="profession">
                             <option value="">Todas as profissões</option>
-                            <option value="Desenvolvedor" {{ request('profession') == 'Desenvolvedor' ? 'selected' : '' }}>Desenvolvedor</option>
-                            <option value="Designer" {{ request('profession') == 'Designer' ? 'selected' : '' }}>Designer</option>
-                            <option value="Gerente" {{ request('profession') == 'Gerente' ? 'selected' : '' }}>Gerente</option>
-                            <option value="Analista" {{ request('profession') == 'Analista' ? 'selected' : '' }}>Analista</option>
-                            <option value="Estudante" {{ request('profession') == 'Estudante' ? 'selected' : '' }}>Estudante</option>
+                            <option value="Desenvolvedor" {{ $profession == 'Desenvolvedor' ? 'selected' : '' }}>Desenvolvedor</option>
+                            <option value="Designer" {{ $profession == 'Designer' ? 'selected' : '' }}>Designer</option>
+                            <option value="Gerente" {{ $profession == 'Gerente' ? 'selected' : '' }}>Gerente</option>
+                            <option value="Analista" {{ $profession == 'Analista' ? 'selected' : '' }}>Analista</option>
+                            <option value="Estudante" {{ $profession == 'Estudante' ? 'selected' : '' }}>Estudante</option>
                         </select>
                     </div>
-                    <div style="min-width: 120px;">
-                        <button type="submit" class="btn search-button w-100">
+                    <div class="col-lg-2 col-md-12">
+                        <button type="submit" class="btn btn-glass w-100">
                             <i class="fas fa-search me-2"></i>Buscar
                         </button>
                     </div>
@@ -301,8 +214,14 @@
                     <div class="empty-state">
                         <i class="fas fa-search fa-3x glass-text-muted mb-3"></i>
                         <h4 class="glass-text">Nenhum perfil encontrado</h4>
-                        <p class="glass-text-muted">Tente ajustar sua busca ou explore outros perfis.</p>
-                        <a href="{{ route('profiles.index') }}" class="btn glass-button mt-3">
+                        <p class="glass-text-muted">
+                            @if($query)
+                                Não encontramos perfis para "{{ $query }}". Tente ajustar sua busca.
+                            @else
+                                Não há perfis disponíveis no momento.
+                            @endif
+                        </p>
+                        <a href="{{ route('profiles.index') }}" class="btn btn-glass mt-3">
                             <i class="fas fa-refresh me-2"></i>Ver Todos os Perfis
                         </a>
                     </div>
