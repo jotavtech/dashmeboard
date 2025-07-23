@@ -51,4 +51,7 @@ RUN chmod +x /var/www/start.sh
 # Expor porta (Render usa a variável PORT)
 EXPOSE ${PORT:-8000}
 
+RUN chown -R www-data:www-data /var/www/storage \
+    && chmod -R 775 /var/www/storage
+
 CMD ["/var/www/start.sh"] 
