@@ -6,6 +6,8 @@ services:
       dockerfile: Dockerfile
     working_dir: /var/www
     volumes:
+      - ./storage:/var/www/storage
+      - ./bootstrap/cache:/var/www/bootstrap/cache
       - ./composer.json:/var/www/composer.json
       - ./app:/var/www/app
       - ./bootstrap:/var/www/bootstrap
