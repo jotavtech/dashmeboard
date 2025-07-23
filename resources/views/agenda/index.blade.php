@@ -1316,7 +1316,7 @@ function deleteEvent(eventId = null) {
         
         fetch(`/agenda/${id}`, {
             method: 'DELETE',
-        headers: {
+            headers: {
                 'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
                 'Accept': 'application/json'
             }
@@ -1327,8 +1327,8 @@ function deleteEvent(eventId = null) {
             }
         return response.json();
     })
-    .then(data => {
-        if (data.success) {
+        .then(data => {
+            if (data.success) {
                 // Remover elemento da lista com animação
                 const eventElement = document.querySelector(`[data-event-id="${id}"]`);
                 if (eventElement) {
@@ -1344,12 +1344,12 @@ function deleteEvent(eventId = null) {
                 showNotification('Atividade excluída com sucesso!', 'success');
         } else {
                 throw new Error(data.error || 'Erro ao excluir atividade');
-        }
+            }
     })
     .catch(error => {
             console.error('Erro ao excluir atividade:', error);
             showNotification('Erro ao excluir atividade: ' + error.message, 'error');
-    });
+        });
     }
 }
 
