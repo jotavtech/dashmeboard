@@ -100,7 +100,7 @@
         <div class="row mb-4">
             <div class="col-md-8">
                 <h1 class="h3 glass-text mb-2">
-                    <i class="fas fa-users me-2"></i>Descobrir Perfis
+                                            <i class="fas fa-users me-2"></i>Descobrir
                 </h1>
                 <p class="glass-text-muted mb-0">Conecte-se com outros usuários e descubra perfis interessantes</p>
             </div>

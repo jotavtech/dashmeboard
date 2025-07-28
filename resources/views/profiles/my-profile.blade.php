@@ -395,7 +395,7 @@
                     <i class="fas fa-edit me-2"></i>Editar Perfil
                 </a>
                 <a href="{{ route('profiles.index') }}" class="btn glass-button-secondary">
-                    <i class="fas fa-users me-2"></i>Descobrir Perfis
+                                            <i class="fas fa-users me-2"></i>Descobrir
                 </a>
                 <a href="{{ route('messages.index') }}" class="btn glass-button-secondary">
                     <i class="fas fa-envelope me-2"></i>Mensagens

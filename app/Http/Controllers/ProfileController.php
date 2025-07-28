@@ -92,35 +92,40 @@ class ProfileController extends Controller
         $profile->is_public = $request->has('is_public');
 
         // Upload de imagens
-        if ($request->hasFile('profile_image')) {
-            $image = $request->file('profile_image');
-            $filename = 'profile_' . time() . '_' . Str::random(10) . '.' . $image->getClientOriginalExtension();
-            
-            // Upload para Cloudinary
-            $cloudinary = \Cloudinary\Uploader::upload($image->getRealPath(), [
-                'public_id' => $filename,
-                'folder' => 'profiles'
-            ]);
-            
-            $profile->profile_image = $cloudinary['public_id'];
-        }
+        try {
+            if ($request->hasFile('profile_image')) {
+                $image = $request->file('profile_image');
+                $filename = 'profile_' . time() . '_' . Str::random(10) . '.' . $image->getClientOriginalExtension();
+                
+                // Upload para Cloudinary
+                $cloudinary = \Cloudinary\Uploader::upload($image->getRealPath(), [
+                    'public_id' => $filename,
+                    'folder' => 'profiles'
+                ]);
+                
+                $profile->profile_image = $cloudinary['public_id'];
+            }
 
-        if ($request->hasFile('background_image')) {
-            $image = $request->file('background_image');
-            $filename = 'background_' . time() . '_' . Str::random(10) . '.' . $image->getClientOriginalExtension();
-            
-            // Upload para Cloudinary
-            $cloudinary = \Cloudinary\Uploader::upload($image->getRealPath(), [
-                'public_id' => $filename,
-                'folder' => 'backgrounds'
-            ]);
-            
-            $profile->background_image = $cloudinary['public_id'];
+            if ($request->hasFile('background_image')) {
+                $image = $request->file('background_image');
+                $filename = 'background_' . time() . '_' . Str::random(10) . '.' . $image->getClientOriginalExtension();
+                
+                // Upload para Cloudinary
+                $cloudinary = \Cloudinary\Uploader::upload($image->getRealPath(), [
+                    'public_id' => $filename,
+                    'folder' => 'backgrounds'
+                ]);
+                
+                $profile->background_image = $cloudinary['public_id'];
+            }
+        } catch (\Exception $e) {
+            // Log do erro mas não interromper o processo
+            \Log::error('Erro no upload de imagem: ' . $e->getMessage());
         }
 
         $profile->save();
 
-        return redirect()->route('profile.show', $profile->username)
+        return redirect()->route('profiles.show', $profile->username)
             ->with('success', 'Perfil atualizado com sucesso!');
     }
 

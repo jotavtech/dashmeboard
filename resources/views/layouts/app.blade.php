@@ -41,7 +41,7 @@
                     </li>
                     <li class="nav-item">
                         <a class="nav-link glass-text" href="{{ route('profiles.index') }}">
-                            <i class="fas fa-users me-1 d-md-none"></i><span class="d-none d-md-inline">Descobrir Perfis</span>
+                            <i class="fas fa-users me-1 d-md-none"></i><span class="d-none d-md-inline">Descobrir</span>
                         </a>
                     </li>
                     <li class="nav-item">

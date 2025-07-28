@@ -857,6 +857,15 @@
                                     <button class="btn btn-sm btn-outline-danger" onclick="openDeleteModal({{ json_encode($item) }})">
                                     <i class="fas fa-trash"></i>
                                 </button>
+                                    @if(!isset($item->atividade_id) || !$item->atividade_id)
+                                        <button class="btn btn-sm btn-outline-success" onclick="createAtividadeFromAgenda({{ $item->id }})" title="Criar Atividade">
+                                            <i class="fas fa-tasks"></i>
+                                        </button>
+                                    @else
+                                        <button class="btn btn-sm btn-outline-info" disabled title="Atividade já criada">
+                                            <i class="fas fa-check"></i>
+                                        </button>
+                                    @endif
                             </div>
                         </div>
                             <p class="activity-description">{{ $item->description }}</p>
@@ -935,6 +944,13 @@
                 <input type="checkbox" id="eventPublic" name="is_public" class="form-check-input">
                 <label class="form-check-label" for="eventPublic">
                     Atividade pública (visível no meu perfil)
+                </label>
+            </div>
+
+            <div class="form-check">
+                <input type="checkbox" id="createAtividade" name="create_atividade" class="form-check-input">
+                <label class="form-check-label" for="createAtividade">
+                    <i class="fas fa-tasks me-1"></i>Criar também como atividade
                 </label>
             </div>
 
@@ -1121,6 +1137,9 @@ function saveEvent(event) {
     // Tratar o campo is_public corretamente
     data.is_public = data.is_public === 'on' || data.is_public === true || data.is_public === 'true' || data.is_public === 1 || data.is_public === '1' ? true : false;
     
+    // Tratar o campo create_atividade corretamente
+    data.create_atividade = data.create_atividade === 'on' || data.create_atividade === true || data.create_atividade === 'true' || data.create_atividade === 1 || data.create_atividade === '1' ? true : false;
+    
     // Tratar o campo time - se estiver vazio, definir como null
     if (!data.time || data.time === '') {
         data.time = null;
@@ -1189,7 +1208,48 @@ function saveEvent(event) {
     });
 }
 
+function createAtividadeFromAgenda(agendaItemId) {
+    if (confirm('Deseja criar uma atividade a partir deste item da agenda?')) {
+        fetch(`/agenda/${agendaItemId}/create-atividade`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json',
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // Atualizar o botão na interface
+                const button = document.querySelector(`button[onclick="createAtividadeFromAgenda(${agendaItemId})"]`);
+                if (button) {
+                    button.className = 'btn btn-sm btn-outline-info';
+                    button.disabled = true;
+                    button.innerHTML = '<i class="fas fa-check"></i>';
+                    button.title = 'Atividade já criada';
+                    button.onclick = null;
+                }
+                
+                showNotification('Atividade criada com sucesso!', 'success');
+            } else {
+                showNotification(data.message || 'Erro ao criar atividade', 'error');
+            }
+        })
+        .catch(error => {
+            console.error('Erro ao criar atividade:', error);
+            showNotification('Erro ao criar atividade', 'error');
+        });
+    }
+}
+
 function addEventToList(agendaItem) {
+    // Remover mensagem "Nenhuma atividade agendada" se existir
+    const emptyMessage = document.querySelector('.activities-list .text-center');
+    if (emptyMessage) {
+        emptyMessage.remove();
+    }
+    
     // Criar elemento da atividade
     const eventElement = createEventElement(agendaItem);
     
@@ -1209,6 +1269,9 @@ function addEventToList(agendaItem) {
             eventElement.style.transform = 'translateY(0)';
         }, 10);
     }
+    
+    // Atualizar calendário
+    updateCalendarWithNewEvent(agendaItem);
 }
 
 function updateEventInList(agendaItem) {
@@ -1226,6 +1289,16 @@ function updateEventInList(agendaItem) {
         setTimeout(() => {
             existingElement.style.animation = '';
         }, 500);
+    } else {
+        // Se não encontrou o elemento, pode ser que seja uma nova atividade
+        // Remover mensagem "Nenhuma atividade agendada" se existir
+        const emptyMessage = document.querySelector('.activities-list .text-center');
+        if (emptyMessage) {
+            emptyMessage.remove();
+        }
+        
+        // Adicionar como nova atividade
+        addEventToList(agendaItem);
     }
 }
 
@@ -1249,6 +1322,15 @@ function createEventElement(agendaItem) {
                 <button class="btn btn-sm btn-outline-danger" onclick="openDeleteModal(${JSON.stringify(agendaItem)})">
                     <i class="fas fa-trash"></i>
                 </button>
+                ${!agendaItem.atividade_id ? `
+                    <button class="btn btn-sm btn-outline-success" onclick="createAtividadeFromAgenda(${agendaItem.id})" title="Criar Atividade">
+                        <i class="fas fa-tasks"></i>
+                    </button>
+                ` : `
+                    <button class="btn btn-sm btn-outline-info" disabled title="Atividade já criada">
+                        <i class="fas fa-check"></i>
+                    </button>
+                `}
             </div>
         </div>
         <p class="activity-description">${agendaItem.description || ''}</p>
@@ -1271,6 +1353,58 @@ function getStatusText(status) {
         'cancelled': 'Cancelada'
     };
     return statusMap[status] || status;
+}
+
+function updateCalendarWithNewEvent(agendaItem) {
+    // Encontrar o dia no calendário
+    const eventDate = new Date(agendaItem.date);
+    const dayElements = document.querySelectorAll('.calendar-day');
+    
+    dayElements.forEach(dayElement => {
+        const dayNumber = dayElement.querySelector('.day-number');
+        if (dayNumber) {
+            // Verificar se o dia é do mês atual
+            const currentMonth = new Date().getMonth();
+            const currentYear = new Date().getFullYear();
+            
+            // Tentar encontrar o dia correto no calendário
+            const dayText = dayNumber.textContent.trim();
+            if (dayText && !isNaN(parseInt(dayText))) {
+                const dayDate = new Date(currentYear, currentMonth, parseInt(dayText));
+                
+                // Comparar apenas o dia e mês (ignorar ano para simplificar)
+                if (dayDate.getDate() === eventDate.getDate() && dayDate.getMonth() === eventDate.getMonth()) {
+                    // Adicionar indicador de atividade no dia
+                    let dayActivities = dayElement.querySelector('.day-activities');
+                    if (!dayActivities) {
+                        dayActivities = document.createElement('div');
+                        dayActivities.className = 'day-activities';
+                        dayElement.appendChild(dayActivities);
+                    }
+                    
+                    // Verificar se já existe um indicador para esta atividade
+                    const existingDot = dayActivities.querySelector(`[data-event-id="${agendaItem.id}"]`);
+                    if (!existingDot) {
+                        // Criar indicador de atividade
+                        const activityDot = document.createElement('div');
+                        activityDot.className = 'activity-dot';
+                        activityDot.setAttribute('data-event-id', agendaItem.id);
+                        activityDot.style.backgroundColor = agendaItem.color || '#007bff';
+                        activityDot.title = agendaItem.title;
+                        activityDot.onclick = (e) => {
+                            e.stopPropagation();
+                            showDayActivities(agendaItem.date);
+                        };
+                        
+                        dayActivities.appendChild(activityDot);
+                        
+                        // Adicionar classe para indicar que o dia tem eventos
+                        dayElement.classList.add('has-events');
+                    }
+                }
+            }
+        }
+    });
 }
 
 function showNotification(message, type = 'info') {
@@ -1524,6 +1658,24 @@ function removeAgendaItem(id) {
                 eventElement.style.transform = 'translateX(-100%)';
                 setTimeout(() => {
                     eventElement.remove();
+                    
+                    // Verificar se ainda há atividades na lista
+                    const remainingActivities = document.querySelectorAll('.activities-list .activity-item');
+                    if (remainingActivities.length === 0) {
+                        // Mostrar mensagem "Nenhuma atividade agendada"
+                        const activitiesContainer = document.querySelector('.activities-list');
+                        if (activitiesContainer) {
+                            activitiesContainer.innerHTML = `
+                                <div style="text-align: center; color: rgba(255, 255, 255, 0.6); padding: 2rem;">
+                                    <i class="fas fa-calendar-times fa-3x mb-3"></i>
+                                    <p>Nenhuma atividade agendada</p>
+                                    <button class="btn btn-primary" onclick="openEventModal()">
+                                        <i class="fas fa-plus me-1"></i>Adicionar Primeira Atividade
+                                    </button>
+                                </div>
+                            `;
+                        }
+                    }
                 }, 300);
             }
             

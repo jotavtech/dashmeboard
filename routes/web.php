@@ -51,9 +51,29 @@ Route::middleware('auth')->group(function () {
         return redirect('/atividades');
     });
     
+    // Rota para visualizar histórico (atividades arquivadas) - MOVIDA PARA O INÍCIO
+    Route::get('/atividades/historico', function () {
+        try {
+            // Temporary workaround: show concluded activities as "archived"
+            $atividades = \App\Models\Atividade::where('user_id', auth()->id())
+                ->where('status', 'concluida')
+                ->orderBy('completed_at', 'desc')
+                ->get();
+            
+            return view('atividades.historico', compact('atividades'));
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
+    })->name('atividades.historico');
+    
+
+    
+
+    
     // Rotas de atividades
     Route::get('/atividades', function () {
         $atividades = \App\Models\Atividade::where('user_id', auth()->id())
+            ->naoArquivadas()
             ->orderBy('created_at', 'desc')
             ->get();
         $categorias = \App\Models\Category::all();
@@ -70,11 +90,27 @@ Route::middleware('auth')->group(function () {
             // Gerar calendário
             $calendar = CalendarHelper::generateCalendar($currentMonth, $user->id);
             
-            $agendaItems = DB::table('agenda_items')
-                ->where('user_id', $user->id)
-                ->orderBy('date')
-                ->orderBy('time')
-                ->get();
+            try {
+                $agendaItems = DB::table('agenda_items')
+                    ->select('*', DB::raw('atividade_id'))
+                    ->where('user_id', $user->id)
+                    ->orderBy('date')
+                    ->orderBy('time')
+                    ->get();
+            } catch (\Exception $e) {
+                // Se a coluna não existe, usar consulta sem ela
+                $agendaItems = DB::table('agenda_items')
+                    ->where('user_id', $user->id)
+                    ->orderBy('date')
+                    ->orderBy('time')
+                    ->get();
+                
+                // Adicionar propriedade atividade_id como null para todos os itens
+                $agendaItems = $agendaItems->map(function($item) {
+                    $item->atividade_id = null;
+                    return $item;
+                });
+            }
 
             return view('agenda.index', compact('agendaItems', 'currentMonth', 'calendar'));
         } catch (\Exception $e) {
@@ -82,12 +118,67 @@ Route::middleware('auth')->group(function () {
         }
     })->name('agenda.index');
     
+    // Rota específica para criar atividade deve vir ANTES da rota genérica
+    Route::post('/agenda/{id}/create-atividade', function($id) {
+        try {
+            $agendaItem = DB::table('agenda_items')->find($id);
+            
+            if (!$agendaItem || $agendaItem->user_id !== auth()->id()) {
+                return response()->json(['error' => 'Não autorizado'], 403);
+            }
+
+            // Verificar se já existe uma atividade para este item da agenda
+            if (isset($agendaItem->atividade_id) && $agendaItem->atividade_id) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Já existe uma atividade criada para este item da agenda'
+                ]);
+            }
+
+            // Criar nova atividade
+            $atividade = \App\Models\Atividade::create([
+                'user_id' => auth()->id(),
+                'titulo' => $agendaItem->title,
+                'descricao' => $agendaItem->description,
+                'status' => 'pendente',
+                'prioridade' => 'media',
+                'data_inicio' => $agendaItem->date,
+                'data_fim' => $agendaItem->date,
+                'progresso' => 0,
+                'categoria_id' => null
+            ]);
+
+            // Atualizar o agenda_item com o ID da atividade
+            try {
+                DB::table('agenda_items')->where('id', $id)->update([
+                    'atividade_id' => $atividade->id
+                ]);
+            } catch (\Exception $e) {
+                // Se não conseguir atualizar (coluna não existe), apenas logar
+                \Log::warning('Não foi possível atualizar atividade_id na agenda_items: ' . $e->getMessage());
+            }
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Atividade criada com sucesso!',
+                'atividade' => $atividade
+            ]);
+        } catch (\Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
+    })->name('agenda.create-atividade');
+
     Route::get('/agenda/{id}', function($id) {
         try {
             $agendaItem = DB::table('agenda_items')->find($id);
             
             if (!$agendaItem || $agendaItem->user_id !== auth()->id()) {
                 return response()->json(['error' => 'Não autorizado'], 403);
+            }
+
+            // Garantir que a propriedade atividade_id existe
+            if (!isset($agendaItem->atividade_id)) {
+                $agendaItem->atividade_id = null;
             }
 
             return response()->json($agendaItem);
@@ -130,6 +221,7 @@ Route::middleware('auth')->group(function () {
                 'is_public' => $request->input('is_public') === true || $request->input('is_public') === 'true' || $request->input('is_public') === 1 || $request->input('is_public') === '1' || $request->input('is_public') === 'on' || $request->input('is_public') === 'checked' || $request->input('is_public') === 'yes' || $request->input('is_public') === 'checked' || $request->input('is_public') === 'true' || $request->input('is_public') === 'true' || $request->input('is_public') === 'true' || $request->input('is_public') === 'true' || $request->input('is_public') === 'true' || $request->input('is_public') === 'true' || $request->input('is_public') === 'true' || $request->input('is_public') === 'true' || $request->input('is_public') === 'true' || $request->input('is_public') === 'true' || $request->input('is_public') === 'true' || $request->input('is_public') === 'true' || $request->input('is_public') === 'true' || $request->input('is_public') === 'true' ? 1 : 0,
                 'color' => $request->color ?? '#007bff',
                 'status' => $request->status ?? 'pending',
+                'atividade_id' => null,
                 'created_at' => now(),
                 'updated_at' => now()
             ]);
@@ -219,6 +311,14 @@ Route::middleware('auth')->group(function () {
                 ->orderBy('time')
                 ->get();
             
+            // Garantir que a propriedade atividade_id existe para todos os itens
+            $activities = $activities->map(function($item) {
+                if (!isset($item->atividade_id)) {
+                    $item->atividade_id = null;
+                }
+                return $item;
+            });
+            
             return response()->json([
                 'success' => true,
                 'activities' => $activities
@@ -228,6 +328,11 @@ Route::middleware('auth')->group(function () {
         }
     })->name('agenda.day');
     
+    // Rota de teste para verificar se o problema é específico
+    Route::get('/agenda/test', function() {
+        return response()->json(['message' => 'Rota de teste funcionando']);
+    })->name('agenda.test');
+
 
     
     // Rotas de criação e edição de atividades
@@ -287,7 +392,39 @@ Route::middleware('auth')->group(function () {
             }
             
             $data = request()->all();
-            $atividade->update($data);
+            
+            // Validar dados
+            $validator = \Illuminate\Support\Facades\Validator::make($data, [
+                'titulo' => 'sometimes|required|string|max:255',
+                'descricao' => 'nullable|string',
+                'status' => 'sometimes|required|in:pendente,em_andamento,concluida',
+                'prioridade' => 'sometimes|required|in:baixa,media,alta',
+                'data_inicio' => 'nullable|date',
+                'data_fim' => 'nullable|date',
+                'progresso' => 'nullable|integer|min:0|max:100',
+                'categoria_id' => 'nullable|integer|exists:categories,id',
+            ]);
+            
+            if ($validator->fails()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Dados inválidos',
+                    'errors' => $validator->errors()
+                ], 422);
+            }
+            
+            // Preparar dados para atualização
+            $updateData = [];
+            if (isset($data['titulo'])) $updateData['titulo'] = $data['titulo'];
+            if (isset($data['descricao'])) $updateData['descricao'] = $data['descricao'];
+            if (isset($data['status'])) $updateData['status'] = $data['status'];
+            if (isset($data['prioridade'])) $updateData['prioridade'] = $data['prioridade'];
+            if (isset($data['data_inicio'])) $updateData['data_inicio'] = $data['data_inicio'];
+            if (isset($data['data_fim'])) $updateData['data_fim'] = $data['data_fim'];
+            if (isset($data['progresso'])) $updateData['progresso'] = (int)$data['progresso'];
+            if (isset($data['categoria_id'])) $updateData['categoria_id'] = $data['categoria_id'] ? (int)$data['categoria_id'] : null;
+            
+            $atividade->update($updateData);
             
             return response()->json([
                 'success' => true,
@@ -325,6 +462,101 @@ Route::middleware('auth')->group(function () {
             ], 500);
         }
     })->name('atividades.destroy');
+    
+    // Rota para arquivar atividade (mover para histórico)
+    Route::put('/archive-activity/{id}', function ($id) {
+        try {
+            $atividade = \App\Models\Atividade::where('user_id', auth()->id())->find($id);
+            
+            if (!$atividade) {
+                return response()->json(['success' => false, 'message' => 'Atividade não encontrada'], 404);
+            }
+            
+            // Marcar como arquivada e definir data de conclusão se não existir
+            $updateData = [
+                'status' => 'concluida',
+                'archived' => true,
+                'archived_at' => now()
+            ];
+            
+            if (!$atividade->completed_at) {
+                $updateData['completed_at'] = now();
+            }
+            
+            $atividade->update($updateData);
+            
+            return response()->json([
+                'success' => true,
+                'message' => 'Atividade movida para o histórico com sucesso!',
+                'atividade' => $atividade
+            ]);
+            
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Erro ao arquivar atividade: ' . $e->getMessage()
+            ], 500);
+        }
+    })->name('atividades.archive');
+    
+    // Rota para restaurar atividade do histórico
+    Route::put('/restore-activity/{id}', function ($id) {
+        try {
+            $atividade = \App\Models\Atividade::where('user_id', auth()->id())->find($id);
+            
+            if (!$atividade) {
+                return response()->json(['success' => false, 'message' => 'Atividade não encontrada'], 404);
+            }
+            
+            // Restaurar atividade (remover flag de arquivada)
+            $atividade->update([
+                'archived' => false,
+                'archived_at' => null
+            ]);
+            
+            return response()->json([
+                'success' => true,
+                'message' => 'Atividade restaurada com sucesso!',
+                'atividade' => $atividade
+            ]);
+            
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Erro ao restaurar atividade: ' . $e->getMessage()
+            ], 500);
+        }
+    })->name('atividades.restore');
+
+    // Nova rota para atualizar status das atividades
+    Route::put('/atividades/{id}/status', function ($id) {
+        try {
+            $atividade = \App\Models\Atividade::where('user_id', auth()->id())->find($id);
+            
+            if (!$atividade) {
+                return response()->json(['success' => false, 'message' => 'Atividade não encontrada'], 404);
+            }
+            
+            $status = request('status');
+            if (!in_array($status, ['pendente', 'em_andamento', 'concluida'])) {
+                return response()->json(['success' => false, 'message' => 'Status inválido'], 400);
+            }
+            
+            $atividade->update(['status' => $status]);
+            
+            return response()->json([
+                'success' => true,
+                'message' => 'Status atualizado com sucesso!',
+                'atividade' => $atividade
+            ]);
+            
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Erro ao atualizar status: ' . $e->getMessage()
+            ], 500);
+        }
+    })->name('atividades.update-status');
 
     // Rotas de Perfis
     Route::get('/profiles', [ProfileController::class, 'index'])->name('profiles.index');
@@ -434,6 +666,13 @@ Route::middleware('auth')->group(function () {
 Route::get('/test', function () {
     return response()->json(['message' => 'Test route working!']);
 });
+
+// Test route for atividades
+Route::get('/test-atividades', function () {
+    return response()->json(['message' => 'Atividades route test working!']);
+})->name('test.atividades');
+
+
 
 Route::post('/test-csrf', function () {
     return response()->json([

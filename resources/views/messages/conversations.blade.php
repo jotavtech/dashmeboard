@@ -194,7 +194,7 @@
                             <i class="fas fa-edit me-2"></i>Nova Mensagem
                         </a>
                         <a href="{{ route('profiles.index') }}" class="btn btn-glass-secondary">
-                            <i class="fas fa-users me-2"></i>Descobrir Perfis
+                            <i class="fas fa-users me-2"></i>Descobrir
                         </a>
                     </div>
                 </div>

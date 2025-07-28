@@ -56,6 +56,8 @@ Route::get('atividades/favoritas', [AtividadeController::class, 'getFavoritas'])
 Route::get('atividades/vencidas', [AtividadeController::class, 'getVencidas']);
 Route::get('atividades/lembretes', [AtividadeController::class, 'getComLembrete']);
 Route::get('atividades/estatisticas', [AtividadeController::class, 'getEstatisticas']);
+Route::get('atividades/ativas', [AtividadeController::class, 'getAtivas']);
+Route::get('atividades/concluidas', [AtividadeController::class, 'getConcluidas']);
 Route::put('atividades/{atividade}/progresso', [AtividadeController::class, 'atualizarProgresso']);
 Route::post('atividades/{atividade}/tags', [AtividadeController::class, 'adicionarTag']);
 Route::delete('atividades/{atividade}/tags', [AtividadeController::class, 'removerTag']); 

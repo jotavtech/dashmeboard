@@ -3041,6 +3041,158 @@ body, p, span, div, a, button, input, textarea, select, label {
 .edit-form-header h5 {
     margin: 0;
     flex-grow: 1;
+    color: rgba(255, 255, 255, 1) !important;
+    font-weight: 600;
+}
+
+/* Forçar título branco em todos os contextos */
+.edit-form-header h5,
+.edit-form-header h5 *,
+.edit-form-header h5 i {
+    color: rgba(255, 255, 255, 1) !important;
+}
+
+/* Sobrescrever qualquer estilo que possa estar interferindo */
+#editOverlay .edit-form-header h5,
+.edit-overlay .edit-form-header h5,
+.edit-container .edit-form-header h5 {
+    color: rgba(255, 255, 255, 1) !important;
+    text-shadow: none !important;
+}
+
+/* Regra mais específica para garantir que funcione */
+.edit-form-header h5,
+.edit-form-header h5:before,
+.edit-form-header h5:after,
+.edit-form-header h5 *,
+.edit-form-header h5 i,
+.edit-form-header h5 span {
+    color: rgba(255, 255, 255, 1) !important;
+    background: transparent !important;
+    text-shadow: none !important;
+    -webkit-text-fill-color: rgba(255, 255, 255, 1) !important;
+}
+
+/* Regra mais específica ainda para sobrescrever qualquer estilo */
+.edit-form-header h5,
+.edit-form-header h5 *,
+.edit-form-header h5 i,
+.edit-form-header h5 span,
+.edit-form-header h5:before,
+.edit-form-header h5:after {
+    color: rgba(255, 255, 255, 1) !important;
+    background: transparent !important;
+    text-shadow: none !important;
+    -webkit-text-fill-color: rgba(255, 255, 255, 1) !important;
+    fill: rgba(255, 255, 255, 1) !important;
+    stroke: rgba(255, 255, 255, 1) !important;
+}
+
+/* Regra específica para o contexto do dashboard */
+.dashboard-background .edit-form-header h5,
+.dashboard-background .edit-overlay .edit-form-header h5,
+.dashboard-background #editOverlay .edit-form-header h5 {
+    color: rgba(255, 255, 255, 1) !important;
+    background: transparent !important;
+    text-shadow: none !important;
+    -webkit-text-fill-color: rgba(255, 255, 255, 1) !important;
+    fill: rgba(255, 255, 255, 1) !important;
+    stroke: rgba(255, 255, 255, 1) !important;
+}
+
+/* Regra mais específica para sobrescrever qualquer estilo que possa estar interferindo */
+.edit-form-card .edit-form-header h5,
+.edit-form-card .edit-form-header h5 *,
+.edit-form-card .edit-form-header h5 i,
+.edit-form-card .edit-form-header h5 span {
+    color: rgba(255, 255, 255, 1) !important;
+    background: transparent !important;
+    text-shadow: none !important;
+    -webkit-text-fill-color: rgba(255, 255, 255, 1) !important;
+    fill: rgba(255, 255, 255, 1) !important;
+    stroke: rgba(255, 255, 255, 1) !important;
+}
+
+/* Regra ainda mais específica para garantir que funcione */
+#editOverlay .edit-form-card .edit-form-header h5,
+#editOverlay .edit-form-card .edit-form-header h5 *,
+#editOverlay .edit-form-card .edit-form-header h5 i,
+#editOverlay .edit-form-card .edit-form-header h5 span {
+    color: rgba(255, 255, 255, 1) !important;
+    background: transparent !important;
+    text-shadow: none !important;
+    -webkit-text-fill-color: rgba(255, 255, 255, 1) !important;
+    fill: rgba(255, 255, 255, 1) !important;
+    stroke: rgba(255, 255, 255, 1) !important;
+}
+
+/* Regra para o modal de criação também */
+#createOverlay .edit-form-card .edit-form-header h5,
+#createOverlay .edit-form-card .edit-form-header h5 *,
+#createOverlay .edit-form-card .edit-form-header h5 i,
+#createOverlay .edit-form-card .edit-form-header h5 span {
+    color: rgba(255, 255, 255, 1) !important;
+    background: transparent !important;
+    text-shadow: none !important;
+    -webkit-text-fill-color: rgba(255, 255, 255, 1) !important;
+    fill: rgba(255, 255, 255, 1) !important;
+    stroke: rgba(255, 255, 255, 1) !important;
+}
+
+/* Regra universal para todos os títulos dos modais de edição */
+.edit-form-header h5,
+.edit-form-header h5 *,
+.edit-form-header h5 i,
+.edit-form-header h5 span,
+.edit-form-header h5:before,
+.edit-form-header h5:after {
+    color: rgba(255, 255, 255, 1) !important;
+    background: transparent !important;
+    text-shadow: none !important;
+    -webkit-text-fill-color: rgba(255, 255, 255, 1) !important;
+    fill: rgba(255, 255, 255, 1) !important;
+    stroke: rgba(255, 255, 255, 1) !important;
+}
+
+/* Regra mais específica para sobrescrever qualquer estilo que possa estar interferindo */
+.edit-overlay .edit-form-header h5,
+.edit-overlay .edit-form-header h5 *,
+.edit-overlay .edit-form-header h5 i,
+.edit-overlay .edit-form-header h5 span {
+    color: rgba(255, 255, 255, 1) !important;
+    background: transparent !important;
+    text-shadow: none !important;
+    -webkit-text-fill-color: rgba(255, 255, 255, 1) !important;
+    fill: rgba(255, 255, 255, 1) !important;
+    stroke: rgba(255, 255, 255, 1) !important;
+}
+
+/* Regra ainda mais específica para garantir que funcione */
+.edit-overlay .edit-form-card .edit-form-header h5,
+.edit-overlay .edit-form-card .edit-form-header h5 *,
+.edit-overlay .edit-form-card .edit-form-header h5 i,
+.edit-overlay .edit-form-card .edit-form-header h5 span {
+    color: rgba(255, 255, 255, 1) !important;
+    background: transparent !important;
+    text-shadow: none !important;
+    -webkit-text-fill-color: rgba(255, 255, 255, 1) !important;
+    fill: rgba(255, 255, 255, 1) !important;
+    stroke: rgba(255, 255, 255, 1) !important;
+}
+
+/* Regra mais específica ainda para sobrescrever qualquer estilo */
+.edit-overlay .edit-form-card .edit-form-header h5,
+.edit-overlay .edit-form-card .edit-form-header h5 *,
+.edit-overlay .edit-form-card .edit-form-header h5 i,
+.edit-overlay .edit-form-card .edit-form-header h5 span,
+.edit-overlay .edit-form-card .edit-form-header h5:before,
+.edit-overlay .edit-form-card .edit-form-header h5:after {
+    color: rgba(255, 255, 255, 1) !important;
+    background: transparent !important;
+    text-shadow: none !important;
+    -webkit-text-fill-color: rgba(255, 255, 255, 1) !important;
+    fill: rgba(255, 255, 255, 1) !important;
+    stroke: rgba(255, 255, 255, 1) !important;
 }
 
 .edit-close-btn {
@@ -4135,6 +4287,204 @@ body, p, span, div, a, button, input, textarea, select, label {
 
 .activity-progress {
     margin-top: 1rem;
+}
+
+.activity-progress .progress {
+    height: 8px;
+    border-radius: 4px;
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.activity-progress .progress-bar {
+    background: linear-gradient(90deg, rgba(255, 255, 255, 0.3), rgba(255, 255, 255, 0.5));
+    border-radius: 4px;
+    transition: width 0.3s ease;
+}
+
+.activity-progress .btn-group {
+    flex-shrink: 0;
+}
+
+.activity-progress .btn-group .btn {
+    padding: 4px 8px;
+    font-size: 0.75rem;
+    border-radius: 4px;
+    transition: all 0.2s ease;
+}
+
+.activity-progress .btn-group .btn:hover {
+    transform: scale(1.05);
+}
+
+.activity-progress .btn-group .btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+/* Estilos para o slider de progresso */
+.activity-progress .form-range {
+    height: 6px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 3px;
+    border: none;
+    outline: none;
+}
+
+.activity-progress .form-range::-webkit-slider-thumb {
+    appearance: none;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.8), rgba(255, 255, 255, 0.6));
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.activity-progress .form-range::-webkit-slider-thumb:hover {
+    transform: scale(1.2);
+    background: linear-gradient(135deg, rgba(255, 255, 255, 1), rgba(255, 255, 255, 0.8));
+}
+
+.activity-progress .form-range::-moz-range-thumb {
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.8), rgba(255, 255, 255, 0.6));
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.activity-progress .form-range::-moz-range-thumb:hover {
+    transform: scale(1.2);
+    background: linear-gradient(135deg, rgba(255, 255, 255, 1), rgba(255, 255, 255, 0.8));
+}
+
+/* Estilos para as tabs */
+.nav-tabs {
+    border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.nav-tabs .nav-link {
+    background: transparent;
+    border: none;
+    color: rgba(255, 255, 255, 0.7);
+    padding: 12px 20px;
+    border-radius: 8px 8px 0 0;
+    transition: all 0.3s ease;
+}
+
+.nav-tabs .nav-link:hover {
+    background: transparent !important;
+    color: rgba(255, 255, 255, 0.9) !important;
+    border: none !important;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.3) !important;
+}
+
+.nav-tabs .nav-link.active {
+    background: transparent !important;
+    color: rgba(255, 255, 255, 1) !important;
+    border: none !important;
+    backdrop-filter: blur(10px);
+    border-bottom: 2px solid rgba(255, 255, 255, 0.8) !important;
+}
+
+.nav-tabs .nav-link i {
+    margin-right: 8px;
+}
+
+/* Cards das tabs com fundo transparente */
+.tab-content .glass-card {
+    background: transparent;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: none;
+}
+
+/* Forçar transparência nas abas - sobrescrever Bootstrap */
+.nav-tabs .nav-link,
+.nav-tabs .nav-link.active,
+.nav-tabs .nav-link:hover,
+.nav-tabs .nav-link:focus,
+.nav-tabs .nav-link:active {
+    background: transparent !important;
+    background-color: transparent !important;
+    border-color: transparent !important;
+    border-top-color: transparent !important;
+    border-left-color: transparent !important;
+    border-right-color: transparent !important;
+}
+
+.nav-tabs .nav-link.active {
+    border-bottom-color: rgba(255, 255, 255, 0.8) !important;
+    background: transparent !important;
+    background-color: transparent !important;
+}
+
+.nav-tabs .nav-link:hover {
+    border-bottom-color: rgba(255, 255, 255, 0.3) !important;
+    background: transparent !important;
+    background-color: transparent !important;
+}
+
+/* Sobrescrever especificamente o Bootstrap */
+.nav-tabs .nav-link.active,
+.nav-tabs .nav-link.active:hover,
+.nav-tabs .nav-link.active:focus {
+    background: transparent !important;
+    background-color: transparent !important;
+    border-color: transparent !important;
+    border-top-color: transparent !important;
+    border-left-color: transparent !important;
+    border-right-color: transparent !important;
+}
+
+/* Regra mais específica para garantir transparência */
+#activitiesTabs .nav-link,
+#activitiesTabs .nav-link.active,
+#activitiesTabs .nav-link:hover,
+#activitiesTabs .nav-link:focus {
+    background: transparent !important;
+    background-color: transparent !important;
+    border-color: transparent !important;
+    border-top-color: transparent !important;
+    border-left-color: transparent !important;
+    border-right-color: transparent !important;
+}
+
+#activitiesTabs .nav-link.active {
+    border-bottom-color: rgba(255, 255, 255, 0.8) !important;
+}
+
+#activitiesTabs .nav-link:hover {
+    border-bottom-color: rgba(255, 255, 255, 0.3) !important;
+}
+
+.tab-content .glass-card .glass-text {
+    color: rgba(255, 255, 255, 1) !important;
+}
+
+.tab-content .glass-card .glass-text-muted {
+    color: rgba(255, 255, 255, 0.7) !important;
+}
+
+/* Cards de atividades no histórico */
+#historyContainer .glass-card {
+    background: transparent;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: none;
+}
+
+#historyContainer .glass-card h6 {
+    color: rgba(255, 255, 255, 1) !important;
+}
+
+#historyContainer .glass-card p {
+    color: rgba(255, 255, 255, 0.7) !important;
+}
+
+#historyContainer .glass-card small {
+    color: rgba(255, 255, 255, 0.6) !important;
 }
 
 .activity-meta {

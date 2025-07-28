@@ -74,7 +74,7 @@
                             <h4 class="glass-text">Nenhuma mensagem</h4>
                             <p class="glass-text-muted">Você ainda não tem mensagens. Que tal conhecer novas pessoas?</p>
                             <a href="{{ route('profiles.index') }}" class="btn glass-button">
-                                <i class="fas fa-users me-2"></i>Descobrir Perfis
+                                <i class="fas fa-users me-2"></i>Descobrir
                             </a>
                         </div>
                     </div>

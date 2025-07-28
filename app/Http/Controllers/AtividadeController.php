@@ -99,7 +99,10 @@ class AtividadeController extends Controller
             'descricao' => 'nullable|string',
             'status' => 'sometimes|required|in:pendente,em_andamento,concluida',
             'prioridade' => 'sometimes|required|in:baixa,media,alta',
-            'data_limite' => 'nullable|date',
+            'data_inicio' => 'nullable|date',
+            'data_fim' => 'nullable|date',
+            'progresso' => 'nullable|integer|min:0|max:100',
+            'categoria_id' => 'nullable|integer|exists:categories,id',
         ]);
 
         // Extrair apenas os campos que existem na tabela
@@ -108,14 +111,17 @@ class AtividadeController extends Controller
         if ($request->has('descricao')) $updateData['descricao'] = $request->descricao;
         if ($request->has('status')) $updateData['status'] = $request->status;
         if ($request->has('prioridade')) $updateData['prioridade'] = $request->prioridade;
-        if ($request->has('data_limite')) $updateData['data_limite'] = $request->data_limite;
+        if ($request->has('data_inicio')) $updateData['data_inicio'] = $request->data_inicio;
+        if ($request->has('data_fim')) $updateData['data_fim'] = $request->data_fim;
+        if ($request->has('progresso')) $updateData['progresso'] = (int)$request->progresso;
+        if ($request->has('categoria_id')) $updateData['categoria_id'] = $request->categoria_id ? (int)$request->categoria_id : null;
 
         $atividade->update($updateData);
 
         return response()->json([
             'success' => true,
             'message' => 'Atividade atualizada com sucesso!',
-            'data' => $atividade
+            'atividade' => $atividade
         ]);
     }
 
@@ -291,19 +297,88 @@ class AtividadeController extends Controller
     }
 
     /**
+     * Atualizar status de uma atividade
+     */
+    public function updateStatus(Request $request, Atividade $atividade): JsonResponse
+    {
+        $request->validate([
+            'status' => 'required|in:pendente,em_andamento,concluida'
+        ]);
+
+        // Verificar se a atividade pertence ao usuário logado
+        if ($atividade->user_id !== Auth::id()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Atividade não encontrada'
+            ], 404);
+        }
+
+        $updateData = ['status' => $request->status];
+
+        // Se a atividade foi concluída, adicionar timestamp de conclusão
+        if ($request->status === 'concluida') {
+            $updateData['completed_at'] = now();
+            $updateData['progresso'] = 100; // Garantir que o progresso seja 100%
+        } else {
+            // Se não foi concluída, remover timestamp de conclusão
+            $updateData['completed_at'] = null;
+        }
+
+        $atividade->update($updateData);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Status atualizado com sucesso!',
+            'data' => $atividade
+        ]);
+    }
+
+    /**
+     * Get atividades ativas (não concluídas)
+     */
+    public function getAtivas(): JsonResponse
+    {
+        $atividades = Atividade::where('user_id', Auth::id())
+            ->ativas()
+            ->orderBy('created_at', 'desc')
+            ->get();
+        
+        return response()->json([
+            'success' => true,
+            'data' => $atividades
+        ]);
+    }
+
+    /**
+     * Get atividades concluídas (histórico)
+     */
+    public function getConcluidas(): JsonResponse
+    {
+        $atividades = Atividade::where('user_id', Auth::id())
+            ->concluidas()
+            ->orderBy('completed_at', 'desc')
+            ->get();
+        
+        return response()->json([
+            'success' => true,
+            'data' => $atividades
+        ]);
+    }
+
+    /**
      * Get estatísticas das atividades
      */
     public function getEstatisticas(): JsonResponse
     {
-        $total = Atividade::count();
-        $pendentes = Atividade::pendentes()->count();
-        $emAndamento = Atividade::emAndamento()->count();
-        $concluidas = Atividade::concluidas()->count();
-        $favoritas = Atividade::favoritas()->count();
-        $vencidas = Atividade::vencidas()->count();
+        $total = Atividade::where('user_id', Auth::id())->count();
+        $pendentes = Atividade::where('user_id', Auth::id())->pendentes()->count();
+        $emAndamento = Atividade::where('user_id', Auth::id())->emAndamento()->count();
+        $concluidas = Atividade::where('user_id', Auth::id())->concluidas()->count();
+        $favoritas = Atividade::where('user_id', Auth::id())->favoritas()->count();
+        $vencidas = Atividade::where('user_id', Auth::id())->vencidas()->count();
 
-        $tempoTotalEstimado = Atividade::sum('tempo_estimado');
-        $tempoTotalReal = Atividade::sum('tempo_real');
+        $tempoTotalEstimado = Atividade::where('user_id', Auth::id())->sum('tempo_estimado');
+        $tempoTotalReal = Atividade::where('user_id', Auth::id())->sum('tempo_real');
 
         return response()->json([
             'success' => true,

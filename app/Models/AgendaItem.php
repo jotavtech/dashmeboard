@@ -9,6 +9,7 @@ class AgendaItem extends Model
 {
     protected $fillable = [
         'user_id',
+        'atividade_id',
         'title',
         'description',
         'date',
@@ -27,6 +28,11 @@ class AgendaItem extends Model
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
+    }
+
+    public function atividade(): BelongsTo
+    {
+        return $this->belongsTo(Atividade::class);
     }
 
     public function getFormattedTimeAttribute()

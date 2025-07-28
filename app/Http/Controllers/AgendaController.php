@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Atividade;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -45,7 +46,8 @@ class AgendaController extends Controller
             'time' => 'nullable|date_format:H:i',
             'is_public' => 'boolean',
             'color' => 'nullable|string|max:7',
-            'status' => 'nullable|in:pending,completed,cancelled'
+            'status' => 'nullable|in:pending,completed,cancelled',
+            'create_atividade' => 'boolean'
         ]);
 
         $agendaItemId = DB::table('agenda_items')->insertGetId([
@@ -63,15 +65,80 @@ class AgendaController extends Controller
 
         $agendaItem = DB::table('agenda_items')->find($agendaItemId);
 
+        // Se solicitado, criar também uma atividade
+        $atividade = null;
+        if ($request->boolean('create_atividade')) {
+            $atividade = Atividade::create([
+                'user_id' => Auth::id(),
+                'titulo' => $request->title,
+                'descricao' => $request->description,
+                'status' => 'pendente',
+                'prioridade' => 'media',
+                'data_inicio' => $request->date,
+                'data_fim' => $request->date,
+                'progresso' => 0,
+                'categoria_id' => null
+            ]);
+
+            // Atualizar o agenda_item com o ID da atividade
+            DB::table('agenda_items')->where('id', $agendaItemId)->update([
+                'atividade_id' => $atividade->id
+            ]);
+
+            $agendaItem = DB::table('agenda_items')->find($agendaItemId);
+        }
+
         if ($request->ajax()) {
             return response()->json([
                 'success' => true,
                 'message' => 'Atividade adicionada com sucesso!',
-                'agendaItem' => $agendaItem
+                'agendaItem' => $agendaItem,
+                'atividade' => $atividade
             ]);
         }
 
         return redirect()->route('agenda.index')->with('success', 'Atividade adicionada com sucesso!');
+    }
+
+    public function createAtividadeFromAgenda($id)
+    {
+        $agendaItem = DB::table('agenda_items')->find($id);
+        
+        if (!$agendaItem || $agendaItem->user_id !== Auth::id()) {
+            return response()->json(['error' => 'Não autorizado'], 403);
+        }
+
+        // Verificar se já existe uma atividade para este item da agenda
+        if ($agendaItem->atividade_id) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Já existe uma atividade criada para este item da agenda'
+            ]);
+        }
+
+        // Criar nova atividade
+        $atividade = Atividade::create([
+            'user_id' => Auth::id(),
+            'titulo' => $agendaItem->title,
+            'descricao' => $agendaItem->description,
+            'status' => 'pendente',
+            'prioridade' => 'media',
+            'data_inicio' => $agendaItem->date,
+            'data_fim' => $agendaItem->date,
+            'progresso' => 0,
+            'categoria_id' => null
+        ]);
+
+        // Atualizar o agenda_item com o ID da atividade
+        DB::table('agenda_items')->where('id', $id)->update([
+            'atividade_id' => $atividade->id
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Atividade criada com sucesso!',
+            'atividade' => $atividade
+        ]);
     }
 
     public function update(Request $request, $id)
@@ -136,6 +203,20 @@ class AgendaController extends Controller
         return redirect()->route('agenda.index')->with('success', 'Atividade removida com sucesso!');
     }
 
+    public function getDayActivities($date)
+    {
+        $activities = DB::table('agenda_items')
+            ->where('user_id', Auth::id())
+            ->where('date', $date)
+            ->orderBy('time')
+            ->get();
+
+        return response()->json([
+            'success' => true,
+            'activities' => $activities
+        ]);
+    }
+
     private function generateCalendar($month, $agendaItems)
     {
         $date = strtotime($month . '-01');
@@ -155,11 +236,12 @@ class AgendaController extends Controller
                 });
                 
                 $week[] = [
-                    'date' => $currentDate,
+                    'date' => date('Y-m-d', $currentDate),
+                    'day' => date('j', $currentDate),
                     'isCurrentMonth' => date('m', $currentDate) === date('m', $date),
                     'isToday' => date('Y-m-d', $currentDate) === date('Y-m-d'),
-                    'items' => $dayItems,
-                    'itemCount' => $dayItems->count()
+                    'activities' => $dayItems,
+                    'activityCount' => $dayItems->count()
                 ];
                 
                 $currentDate = strtotime('+1 day', $currentDate);
