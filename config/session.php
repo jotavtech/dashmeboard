@@ -33,23 +33,22 @@ return [
     |
     */
 
-    'lifetime' => (int) env('SESSION_LIFETIME', 120),
+    'lifetime' => env('SESSION_LIFETIME', 120),
 
-    'expire_on_close' => env('SESSION_EXPIRE_ON_CLOSE', false),
+    'expire_on_close' => false,
 
     /*
     |--------------------------------------------------------------------------
-    | Criptografia da Sessão
+    | Session Encryption
     |--------------------------------------------------------------------------
     |
-    | Esta opção permite que você especifique facilmente que todos os dados
-    | da sua sessão devem ser criptografados antes de serem armazenados.
-    | Toda a criptografia é realizada automaticamente pelo Laravel e você
-    | pode usar a sessão normalmente.
+    | This option allows you to easily specify that all of your session data
+    | should be encrypted before it is stored. All encryption will be run
+    | automatically by Laravel and you can use the Session like normal.
     |
     */
 
-    'encrypt' => env('SESSION_ENCRYPT', false),
+    'encrypt' => false,
 
     /*
     |--------------------------------------------------------------------------

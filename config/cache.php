@@ -15,7 +15,25 @@ return [
     |
     */
 
-    'default' => env('CACHE_STORE', 'file'),
+    'default' => env('CACHE_DRIVER', 'file'),
+
+    /*
+    |--------------------------------------------------------------------------
+    | Cache Store Pruning
+    |--------------------------------------------------------------------------
+    |
+    | Here you may configure the automatic pruning of cache stores. This
+    | feature allows you to automatically remove old cache entries when
+    | they are no longer needed.
+    |
+    */
+
+    'pruning' => [
+        'default' => [
+            'driver' => 'file',
+            'hours' => 24,
+        ],
+    ],
 
     /*
     |--------------------------------------------------------------------------

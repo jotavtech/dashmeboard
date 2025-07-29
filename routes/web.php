@@ -135,35 +135,48 @@ Route::middleware('auth')->group(function () {
                 ]);
             }
 
-            // Criar nova atividade
-            $atividade = \App\Models\Atividade::create([
-                'user_id' => auth()->id(),
-                'titulo' => $agendaItem->title,
-                'descricao' => $agendaItem->description,
-                'status' => 'pendente',
-                'prioridade' => 'media',
-                'data_inicio' => $agendaItem->date,
-                'data_fim' => $agendaItem->date,
-                'progresso' => 0,
-                'categoria_id' => null
-            ]);
-
-            // Atualizar o agenda_item com o ID da atividade
+            // Criar nova atividade usando transação para melhor performance
+            DB::beginTransaction();
+            
             try {
+                $atividade = \App\Models\Atividade::create([
+                    'user_id' => auth()->id(),
+                    'titulo' => $agendaItem->title,
+                    'descricao' => $agendaItem->description,
+                    'status' => 'pendente',
+                    'prioridade' => 'media',
+                    'data_inicio' => $agendaItem->date,
+                    'data_fim' => $agendaItem->date,
+                    'categoria_id' => null
+                ]);
+
+                // Atualizar o agenda_item com o ID da atividade
                 DB::table('agenda_items')->where('id', $id)->update([
                     'atividade_id' => $atividade->id
                 ]);
+                
+                DB::commit();
+                
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Atividade criada com sucesso!',
+                    'atividade' => $atividade
+                ]);
             } catch (\Exception $e) {
-                // Se não conseguir atualizar (coluna não existe), apenas logar
-                \Log::warning('Não foi possível atualizar atividade_id na agenda_items: ' . $e->getMessage());
+                DB::rollback();
+                \Log::error('Erro ao criar atividade:', [
+                    'error' => $e->getMessage(),
+                    'trace' => $e->getTraceAsString(),
+                    'agenda_item_id' => $id,
+                    'user_id' => auth()->id()
+                ]);
+                throw $e;
             }
-
-            return response()->json([
-                'success' => true,
-                'message' => 'Atividade criada com sucesso!',
-                'atividade' => $atividade
-            ]);
         } catch (\Exception $e) {
+            \Log::error('Erro geral na criação de atividade:', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
             return response()->json(['error' => $e->getMessage()], 500);
         }
     })->name('agenda.create-atividade');
@@ -193,12 +206,8 @@ Route::middleware('auth')->group(function () {
         try {
             // Verificar se o usuário está autenticado
             if (!auth()->check()) {
-                \Log::error('Usuário não autenticado na requisição POST /agenda');
                 return response()->json(['error' => 'Usuário não autenticado'], 401);
             }
-            
-            \Log::info('Usuário autenticado:', ['user_id' => auth()->id(), 'user' => auth()->user()]);
-            \Log::info('Dados recebidos na agenda:', $request->all());
             
             $request->validate([
                 'title' => 'required|string|max:255',
@@ -210,7 +219,8 @@ Route::middleware('auth')->group(function () {
                 'status' => 'nullable|in:pending,completed,cancelled'
             ]);
 
-            \Log::info('Validação passou, inserindo no banco...');
+            // Simplificar a lógica do is_public
+            $isPublic = in_array($request->input('is_public'), [true, 'true', 1, '1', 'on', 'checked', 'yes']);
 
             $agendaItemId = DB::table('agenda_items')->insertGetId([
                 'user_id' => auth()->id(),
@@ -218,7 +228,7 @@ Route::middleware('auth')->group(function () {
                 'description' => $request->description,
                 'date' => $request->date,
                 'time' => $request->time ?: null,
-                'is_public' => $request->input('is_public') === true || $request->input('is_public') === 'true' || $request->input('is_public') === 1 || $request->input('is_public') === '1' || $request->input('is_public') === 'on' || $request->input('is_public') === 'checked' || $request->input('is_public') === 'yes' || $request->input('is_public') === 'checked' || $request->input('is_public') === 'true' || $request->input('is_public') === 'true' || $request->input('is_public') === 'true' || $request->input('is_public') === 'true' || $request->input('is_public') === 'true' || $request->input('is_public') === 'true' || $request->input('is_public') === 'true' || $request->input('is_public') === 'true' || $request->input('is_public') === 'true' || $request->input('is_public') === 'true' || $request->input('is_public') === 'true' || $request->input('is_public') === 'true' || $request->input('is_public') === 'true' || $request->input('is_public') === 'true' ? 1 : 0,
+                'is_public' => $isPublic ? 1 : 0,
                 'color' => $request->color ?? '#007bff',
                 'status' => $request->status ?? 'pending',
                 'atividade_id' => null,
@@ -226,17 +236,15 @@ Route::middleware('auth')->group(function () {
                 'updated_at' => now()
             ]);
 
-            \Log::info('Atividade inserida com ID:', ['id' => $agendaItemId]);
-
             $agendaItem = DB::table('agenda_items')->find($agendaItemId);
 
-                return response()->json([
-                    'success' => true,
-                    'message' => 'Atividade adicionada com sucesso!',
-                    'agendaItem' => $agendaItem
-                ]);
+            return response()->json([
+                'success' => true,
+                'message' => 'Atividade adicionada com sucesso!',
+                'agendaItem' => $agendaItem
+            ]);
         } catch (\Exception $e) {
-            \Log::error('Erro ao salvar atividade:', ['error' => $e->getMessage(), 'trace' => $e->getTraceAsString()]);
+            \Log::error('Erro ao salvar atividade:', ['error' => $e->getMessage()]);
             return response()->json(['error' => $e->getMessage()], 500);
         }
     })->name('agenda.store');
@@ -259,12 +267,15 @@ Route::middleware('auth')->group(function () {
                 'status' => 'nullable|in:pending,completed,cancelled'
             ]);
 
+            // Simplificar a lógica do is_public
+            $isPublic = in_array($request->input('is_public'), [true, 'true', 1, '1', 'on', 'checked', 'yes']);
+
             DB::table('agenda_items')->where('id', $id)->update([
                 'title' => $request->title,
                 'description' => $request->description,
                 'date' => $request->date,
                 'time' => $request->time ?: null,
-                'is_public' => $request->input('is_public') === true || $request->input('is_public') === 'true' || $request->input('is_public') === 1 || $request->input('is_public') === '1' || $request->input('is_public') === 'on' || $request->input('is_public') === 'checked' || $request->input('is_public') === 'yes' || $request->input('is_public') === 'checked' || $request->input('is_public') === 'true' || $request->input('is_public') === 'true' || $request->input('is_public') === 'true' || $request->input('is_public') === 'true' || $request->input('is_public') === 'true' || $request->input('is_public') === 'true' || $request->input('is_public') === 'true' || $request->input('is_public') === 'true' || $request->input('is_public') === 'true' || $request->input('is_public') === 'true' || $request->input('is_public') === 'true' || $request->input('is_public') === 'true' || $request->input('is_public') === 'true' ? 1 : 0,
+                'is_public' => $isPublic ? 1 : 0,
                 'color' => $request->color ?? '#007bff',
                 'status' => $request->status ?? 'pending',
                 'updated_at' => now()
@@ -272,11 +283,11 @@ Route::middleware('auth')->group(function () {
 
             $updatedItem = DB::table('agenda_items')->find($id);
 
-                return response()->json([
-                    'success' => true,
-                    'message' => 'Atividade atualizada com sucesso!',
-                    'agendaItem' => $updatedItem
-                ]);
+            return response()->json([
+                'success' => true,
+                'message' => 'Atividade atualizada com sucesso!',
+                'agendaItem' => $updatedItem
+            ]);
         } catch (\Exception $e) {
             return response()->json(['error' => $e->getMessage()], 500);
         }
@@ -333,6 +344,36 @@ Route::middleware('auth')->group(function () {
         return response()->json(['message' => 'Rota de teste funcionando']);
     })->name('agenda.test');
 
+    // Rota de teste para criação de atividade
+    Route::post('/test-create-activity', function() {
+        try {
+            if (!auth()->check()) {
+                return response()->json(['error' => 'Não autenticado'], 401);
+            }
+            
+            $atividade = \App\Models\Atividade::create([
+                'user_id' => auth()->id(),
+                'titulo' => 'Teste de Atividade',
+                'descricao' => 'Descrição de teste',
+                'status' => 'pendente',
+                'prioridade' => 'media',
+                'categoria_id' => null
+            ]);
+            
+            return response()->json([
+                'success' => true,
+                'message' => 'Atividade de teste criada com sucesso!',
+                'atividade' => $atividade
+            ]);
+        } catch (\Exception $e) {
+            \Log::error('Erro no teste de criação:', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
+    })->name('test.create-activity');
+
 
     
     // Rotas de criação e edição de atividades
@@ -356,7 +397,8 @@ Route::middleware('auth')->group(function () {
                 'descricao' => $data['descricao'] ?? '',
                 'status' => $data['status'] ?? 'pendente',
                 'prioridade' => $data['prioridade'] ?? 'media',
-                'data_limite' => $data['data_fim'] ?? null, // Usar data_fim como data_limite
+                'data_inicio' => $data['data_inicio'] ?? null,
+                'data_fim' => $data['data_fim'] ?? null,
                 'categoria_id' => $data['categoria_id'] ?? null,
                 'user_id' => auth()->id()
             ];
@@ -376,6 +418,11 @@ Route::middleware('auth')->group(function () {
             ], 201);
             
         } catch (\Exception $e) {
+            \Log::error('Erro ao criar atividade:', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+                'data' => request()->all()
+            ]);
             return response()->json([
                 'success' => false,
                 'message' => 'Erro ao criar atividade: ' . $e->getMessage()

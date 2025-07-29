@@ -1210,6 +1210,14 @@ function saveEvent(event) {
 
 function createAtividadeFromAgenda(agendaItemId) {
     if (confirm('Deseja criar uma atividade a partir deste item da agenda?')) {
+        // Feedback visual imediato
+        const button = document.querySelector(`button[onclick="createAtividadeFromAgenda(${agendaItemId})"]`);
+        if (button) {
+            const originalContent = button.innerHTML;
+            button.disabled = true;
+            button.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+        }
+        
         fetch(`/agenda/${agendaItemId}/create-atividade`, {
             method: 'POST',
             headers: {
@@ -1222,7 +1230,6 @@ function createAtividadeFromAgenda(agendaItemId) {
         .then(data => {
             if (data.success) {
                 // Atualizar o botão na interface
-                const button = document.querySelector(`button[onclick="createAtividadeFromAgenda(${agendaItemId})"]`);
                 if (button) {
                     button.className = 'btn btn-sm btn-outline-info';
                     button.disabled = true;
@@ -1233,11 +1240,21 @@ function createAtividadeFromAgenda(agendaItemId) {
                 
                 showNotification('Atividade criada com sucesso!', 'success');
             } else {
+                // Restaurar botão em caso de erro
+                if (button) {
+                    button.disabled = false;
+                    button.innerHTML = originalContent;
+                }
                 showNotification(data.message || 'Erro ao criar atividade', 'error');
             }
         })
         .catch(error => {
             console.error('Erro ao criar atividade:', error);
+            // Restaurar botão em caso de erro
+            if (button) {
+                button.disabled = false;
+                button.innerHTML = originalContent;
+            }
             showNotification('Erro ao criar atividade', 'error');
         });
     }
