@@ -1,5 +1,6 @@
 services:
   php:
+    image: php:8.2-fpm-alpine
     user: "1002:1002"
     build:
       context: .
