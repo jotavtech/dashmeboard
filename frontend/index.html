@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#070707" />
+    <meta
+      name="description"
+      content="Dashmeboard — Smart Workflow & Operations Platform"
+    />
+    <title>Dashmeboard / NODE_27.12</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;700&family=Space+Grotesk:wght@500;600;700&display=swap"
+    />
+    <script>
+      // anti-flicker: aplica tema antes de qualquer paint
+      (function () {
+        try {
+          var stored = localStorage.getItem("dashmeboard:theme");
+          var prefers = window.matchMedia("(prefers-color-scheme: light)").matches
+            ? "light"
+            : "dark";
+          var theme = stored === "light" || stored === "dark" ? stored : prefers;
+          var root = document.documentElement;
+          root.classList.add(theme);
+          root.style.colorScheme = theme;
+          root.setAttribute("data-theme", theme);
+          var meta = document.querySelector('meta[name="theme-color"]');
+          if (meta) meta.setAttribute("content", theme === "dark" ? "#070707" : "#F4F2EE");
+        } catch (e) {
+          document.documentElement.classList.add("dark");
+        }
+      })();
+    </script>
+  </head>
+  <body class="font-body antialiased">
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

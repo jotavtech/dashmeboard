@@ -1,0 +1,97 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum ProjectStatus {
+  PLANNED
+  ACTIVE
+  PAUSED
+  DONE
+  ARCHIVED
+}
+
+enum ProjectPriority {
+  LOW
+  MEDIUM
+  HIGH
+  CRITICAL
+}
+
+enum TaskStatus {
+  TODO
+  DOING
+  REVIEW
+  DONE
+}
+
+enum UserRole {
+  FOUNDER
+  ENGINEER
+  DESIGNER
+  GUEST
+}
+
+model User {
+  id        String    @id @default(uuid())
+  email     String    @unique
+  name      String
+  role      UserRole  @default(ENGINEER)
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  projects  Project[] @relation("ProjectOwner")
+  tasks     Task[]    @relation("TaskAssignee")
+
+  @@map("users")
+}
+
+model Project {
+  id          String          @id @default(uuid())
+  title       String
+  description String?
+  status      ProjectStatus   @default(PLANNED)
+  priority    ProjectPriority @default(MEDIUM)
+  owner       String
+  ownerUser   User?           @relation("ProjectOwner", fields: [owner], references: [email])
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+
+  tasks       Task[]
+
+  @@index([status])
+  @@index([priority])
+  @@map("projects")
+}
+
+model Task {
+  id          String     @id @default(uuid())
+  title       String
+  description String?
+  status      TaskStatus @default(TODO)
+  projectId   String
+  project     Project    @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  assignee    String?
+  assigneeUser User?     @relation("TaskAssignee", fields: [assignee], references: [email])
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+  completedAt DateTime?
+
+  @@index([projectId])
+  @@index([status])
+  @@map("tasks")
+}
+
+model AnalyticsLog {
+  id        String   @id @default(uuid())
+  kind      String
+  payload   Json
+  createdAt DateTime @default(now())
+
+  @@index([kind, createdAt])
+  @@map("analytics_logs")
+}

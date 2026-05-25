@@ -1,0 +1,24 @@
+# Files and folders the agent system must never read or operate on.
+# Mirrors .gitignore for secrets + adds anything sensitive at runtime.
+
+.env
+.env.local
+.env.agent
+backend/.env
+
+node_modules/
+dist/
+build/
+.next/
+.cache/
+
+# Prisma local DBs
+backend/prisma/*.db
+backend/prisma/*.db-journal
+
+# Logs
+logs/
+*.log
+
+# Agent's own memory & state (avoid recursion)
+memory/sessions/

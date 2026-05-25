@@ -1,0 +1,32 @@
+{
+  "name": "dashmeboard",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Dashmeboard — Smart Workflow & Operations Platform",
+  "workspaces": [
+    "frontend",
+    "backend",
+    "agents/orchestrator"
+  ],
+  "scripts": {
+    "dev": "concurrently -n backend,frontend -c blue,magenta \"npm:dev --workspace backend\" \"npm:dev --workspace frontend\"",
+    "build": "npm run build --workspace backend && npm run build --workspace frontend",
+    "lint": "npm run lint --workspaces --if-present",
+    "typecheck": "npm run typecheck --workspaces --if-present",
+    "db:migrate": "npm run db:migrate --workspace backend",
+    "db:seed": "npm run db:seed --workspace backend",
+    "docker:up": "docker compose up --build",
+    "docker:down": "docker compose down",
+    "agents:start": "npm run start --workspace agents/orchestrator",
+    "agent:frontend": "npm run start --workspace agents/orchestrator -- --agent frontend",
+    "agent:backend": "npm run start --workspace agents/orchestrator -- --agent backend",
+    "agent:architect": "npm run start --workspace agents/orchestrator -- --agent architect",
+    "agent:devops": "npm run start --workspace agents/orchestrator -- --agent devops",
+    "agent:design": "npm run start --workspace agents/orchestrator -- --agent design",
+    "agent:docs": "npm run start --workspace agents/orchestrator -- --agent docs",
+    "agent:reviewer": "npm run start --workspace agents/orchestrator -- --agent reviewer"
+  },
+  "devDependencies": {
+    "concurrently": "^9.1.0"
+  }
+}
