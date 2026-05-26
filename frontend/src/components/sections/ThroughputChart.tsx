@@ -12,31 +12,37 @@ export function ThroughputChart({ data }: ThroughputChartProps) {
   return (
     <PaneFrame index="04" label="Throughput · 7d" meta="ops / day">
       <div className="px-6 pt-10 pb-6">
-        <div className="grid grid-cols-7 gap-3 items-end h-[180px]">
-          {data.map((d, i) => {
-            const h = Math.max(4, (d.value / max) * 160);
-            const peak = d.value === max;
-            return (
-              <div key={d.day} className="flex flex-col items-stretch gap-2">
-                <div className="relative flex-1 flex items-end">
-                  <div
-                    className={cn(
-                      "w-full transition-all duration-500 ease-out-expo",
-                      peak ? "bg-accent" : "bg-fg-muted",
-                    )}
-                    style={{ height: `${h}px`, transitionDelay: `${i * 60}ms` }}
-                  />
+        {data.length === 0 ? (
+          <div className="grid h-[180px] place-items-center font-mono text-[11px] uppercase tracking-[0.22em] text-fg-subtle">
+            · no completed tasks yet
+          </div>
+        ) : (
+          <div className="grid grid-cols-7 gap-3 items-end h-[180px]">
+            {data.map((d, i) => {
+              const h = Math.max(4, (d.value / max) * 160);
+              const peak = d.value === max;
+              return (
+                <div key={d.day} className="flex flex-col items-stretch gap-2">
+                  <div className="relative flex-1 flex items-end">
+                    <div
+                      className={cn(
+                        "w-full transition-all duration-500 ease-out-expo",
+                        peak ? "bg-accent" : "bg-fg-muted",
+                      )}
+                      style={{ height: `${h}px`, transitionDelay: `${i * 60}ms` }}
+                    />
+                  </div>
+                  <span className="text-center font-mono text-[10px] uppercase tracking-[0.32em] text-fg-subtle">
+                    {d.day}
+                  </span>
+                  <span className="text-center font-mono text-[10px] tabular-nums text-fg-muted">
+                    {d.value}
+                  </span>
                 </div>
-                <span className="text-center font-mono text-[10px] uppercase tracking-[0.32em] text-fg-subtle">
-                  {d.day}
-                </span>
-                <span className="text-center font-mono text-[10px] tabular-nums text-fg-muted">
-                  {d.value}
-                </span>
-              </div>
-            );
-          })}
-        </div>
+              );
+            })}
+          </div>
+        )}
       </div>
     </PaneFrame>
   );

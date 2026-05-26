@@ -1,4 +1,4 @@
-import { GitCommit, Rocket, RefreshCw, FolderKanban, Bot } from "lucide-react";
+import { GitCommit, Rocket, RefreshCw, FolderKanban, Server } from "lucide-react";
 import type { ActivityItem } from "@/services/analytics";
 import { PaneFrame } from "@/components/primitives/PaneFrame";
 
@@ -7,15 +7,16 @@ const iconMap = {
   deploy: Rocket,
   update: RefreshCw,
   project: FolderKanban,
-  agent: Bot,
+  system: Server,
 } as const;
 
 type ActivityFeedProps = {
   items: ActivityItem[];
   loading?: boolean;
+  error?: boolean;
 };
 
-export function ActivityFeed({ items, loading }: ActivityFeedProps) {
+export function ActivityFeed({ items, loading, error }: ActivityFeedProps) {
   return (
     <PaneFrame index="03" label="Activity feed" meta="last 24h">
       <ul className="divide-y divide-hairline">
@@ -24,7 +25,12 @@ export function ActivityFeed({ items, loading }: ActivityFeedProps) {
             · syncing…
           </li>
         )}
-        {!loading && items.length === 0 && (
+        {!loading && error && (
+          <li className="px-6 py-5 font-mono text-[11px] uppercase tracking-[0.22em] text-accent">
+            · unable to load activity
+          </li>
+        )}
+        {!loading && !error && items.length === 0 && (
           <li className="px-6 py-5 font-mono text-[11px] uppercase tracking-[0.22em] text-fg-subtle">
             · no events
           </li>

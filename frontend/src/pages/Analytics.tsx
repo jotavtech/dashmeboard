@@ -1,83 +1,116 @@
+import { useQuery } from "@tanstack/react-query";
 import { PageShell } from "@/components/sections/PageShell";
 import { StatGrid, type Stat } from "@/components/sections/StatGrid";
 import { ThroughputChart } from "@/components/sections/ThroughputChart";
 import { PaneFrame } from "@/components/primitives/PaneFrame";
-
-const stats: Stat[] = [
-  { index: "01", label: "Requests / day", value: "14.2", suffix: "k", caption: "p95 across all services." },
-  { index: "02", label: "Median latency", value: "84", suffix: "ms", caption: "Backend → frontend round-trip." },
-  { index: "03", label: "Error budget", value: "97", suffix: "%", caption: "Remaining for current SLO window." },
-  { index: "04", label: "Build pipelines", value: "184", caption: "Total runs across all workflows." },
-];
-
-const throughput = [
-  { day: "MON", value: 1240 },
-  { day: "TUE", value: 1580 },
-  { day: "WED", value: 1420 },
-  { day: "THU", value: 1810 },
-  { day: "FRI", value: 1650 },
-  { day: "SAT", value: 620 },
-  { day: "SUN", value: 480 },
-];
-
-const heatmapRows = 7;
-const heatmapCols = 24;
-
-const heatmapScale = [
-  "bg-surface-raised",
-  "bg-fg-faint/30",
-  "bg-fg-subtle/40",
-  "bg-accent/45",
-  "bg-accent",
-];
-
-function heatmapCellTone(v: number) {
-  if (v >= 0.85) return heatmapScale[4];
-  if (v >= 0.6) return heatmapScale[3];
-  if (v >= 0.35) return heatmapScale[2];
-  if (v >= 0.15) return heatmapScale[1];
-  return heatmapScale[0];
-}
+import { getOverview, getThroughput } from "@/services/analytics";
 
 export default function AnalyticsPage() {
+  const overview = useQuery({ queryKey: ["analytics", "overview"], queryFn: getOverview });
+  const throughput = useQuery({ queryKey: ["analytics", "throughput"], queryFn: getThroughput });
+  const data = overview.data;
+
+  const stats: Stat[] = [
+    { index: "01", label: "Total projects", value: metric(data?.totalProjects, overview.isLoading), caption: "All project records in PostgreSQL." },
+    { index: "02", label: "Completed projects", value: metric(data?.completedProjects, overview.isLoading), caption: "Projects marked as done." },
+    { index: "03", label: "Total tasks", value: metric(data?.totalTasks, overview.isLoading), caption: "Task records across all projects." },
+    { index: "04", label: "Completion rate", value: metric(data?.weeklyPerformance, overview.isLoading), suffix: data || overview.isLoading ? "%" : undefined, caption: "Completed tasks divided by total tasks." },
+  ];
+
   return (
     <PageShell
       section="section · analytics"
-      marker="signals"
-      title={<>Production telemetry, distilled.</>}
-      description="Throughput, latency, error budgets and the heatmap of operational pressure across the past week."
+      marker="database signals"
+      title={<>Operational telemetry, grounded in data.</>}
+      description="Project status, priority distribution and completed-task throughput calculated from the backend API."
     >
+      {overview.isError && <ErrorState message="Unable to load analytics overview." />}
       <StatGrid stats={stats} />
 
       <div className="mt-12 grid grid-cols-1 gap-10 lg:grid-cols-2">
-        <ThroughputChart data={throughput} />
-
-        <PaneFrame index="05" label="Pressure heatmap" meta="7d × 24h">
-          <div className="p-6">
-            <div className="grid gap-1" style={{ gridTemplateColumns: `repeat(${heatmapCols}, minmax(0, 1fr))` }}>
-              {Array.from({ length: heatmapRows * heatmapCols }).map((_, i) => {
-                const v = Math.random();
-                return (
-                  <div
-                    key={i}
-                    className={`h-3 ${heatmapCellTone(v)} transition-colors`}
-                    title={`${v.toFixed(2)}`}
-                  />
-                );
-              })}
-            </div>
-            <div className="mt-4 flex items-center gap-2 font-mono text-[10px] uppercase tracking-[0.32em] text-fg-subtle">
-              · low
-              <div className="flex gap-1">
-                {heatmapScale.map((c) => (
-                  <span key={c} className={`h-2 w-4 ${c}`} />
-                ))}
-              </div>
-              high
-            </div>
-          </div>
-        </PaneFrame>
+        <ThroughputChart data={throughput.data ?? []} />
+        <DistributionPanel
+          status={data?.projectsByStatus ?? {}}
+          priority={data?.projectsByPriority ?? {}}
+          loading={overview.isLoading}
+        />
       </div>
     </PageShell>
   );
+}
+
+function DistributionPanel({
+  status,
+  priority,
+  loading,
+}: {
+  status: Record<string, number>;
+  priority: Record<string, number>;
+  loading: boolean;
+}) {
+  const statusRows = normalize(status, ["PLANNED", "ACTIVE", "PAUSED", "DONE", "ARCHIVED"]);
+  const priorityRows = normalize(priority, ["LOW", "MEDIUM", "HIGH", "CRITICAL"]);
+
+  return (
+    <PaneFrame index="05" label="Distribution" meta="projects">
+      <div className="grid gap-8 p-6 md:grid-cols-2">
+        <DistributionColumn title="status" rows={statusRows} loading={loading} />
+        <DistributionColumn title="priority" rows={priorityRows} loading={loading} accent />
+      </div>
+    </PaneFrame>
+  );
+}
+
+function DistributionColumn({
+  title,
+  rows,
+  loading,
+  accent = false,
+}: {
+  title: string;
+  rows: Array<{ label: string; value: number }>;
+  loading: boolean;
+  accent?: boolean;
+}) {
+  const max = Math.max(1, ...rows.map((row) => row.value));
+
+  return (
+    <div>
+      <p className="mb-4 font-mono text-[10px] uppercase tracking-[0.32em] text-fg-subtle">· {title}</p>
+      <div className="space-y-3">
+        {rows.map((row) => (
+          <div key={row.label}>
+            <div className="mb-1 flex items-center justify-between font-mono text-[10px] uppercase tracking-[0.22em]">
+              <span className="text-fg-muted">{row.label}</span>
+              <span className="tabular-nums text-fg-subtle">{loading ? "…" : row.value}</span>
+            </div>
+            <div className="h-2 bg-surface-raised">
+              <div
+                className={accent ? "h-full bg-accent" : "h-full bg-fg-muted"}
+                style={{ width: `${loading ? 18 : Math.max(4, (row.value / max) * 100)}%` }}
+              />
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function ErrorState({ message }: { message: string }) {
+  return (
+    <div className="mb-6 border border-accent/50 bg-accent/5 px-5 py-4 font-mono text-[11px] uppercase tracking-[0.18em] text-accent">
+      · {message}
+    </div>
+  );
+}
+
+function normalize(values: Record<string, number>, labels: string[]) {
+  return labels.map((label) => ({ label, value: values[label] ?? 0 }));
+}
+
+function metric(value: number | undefined, loading: boolean) {
+  if (loading) return "…";
+  if (typeof value === "number") return String(value);
+  return "—";
 }

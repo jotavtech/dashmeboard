@@ -13,7 +13,7 @@ export default function SettingsPage() {
       section="section · settings"
       marker="preferences"
       title={<>Node preferences.</>}
-      description="Theme, locale and operational defaults for this dashboard."
+      description="Theme and presentation defaults for this dashboard. Only local UI preferences are exposed here."
     >
       <div className="grid grid-cols-1 gap-10 lg:grid-cols-2">
         <PaneFrame index="01" label="Appearance" meta="theme" delay={0.04}>
@@ -56,34 +56,21 @@ export default function SettingsPage() {
           </div>
         </PaneFrame>
 
-        <PaneFrame index="03" label="Account" meta="profile" delay={0.12}>
+        <PaneFrame index="03" label="Runtime" meta="environment" delay={0.12}>
           <div className="space-y-5 p-6">
-            <Row label="Owner" value="jotavtech" />
-            <Row label="Email" value="vitinhucfelix@gmail.com" />
-            <Row label="Role" value="founder" tone="text-emerald-300" />
-            <Row label="Session" value="active · 02h 14m" />
+            <Row label="Frontend" value="Vite · React" />
+            <Row label="Backend" value="Express · Prisma" />
+            <Row label="Database" value="PostgreSQL" tone="text-emerald-300" />
+            <Row label="Quality" value="CI · SonarCloud" />
           </div>
         </PaneFrame>
 
-        <PaneFrame index="04" label="Danger zone" meta="irreversible" delay={0.16}>
+        <PaneFrame index="04" label="Presentation mode" meta="checklist" delay={0.16}>
           <div className="space-y-5 p-6">
-            <p className="font-mono text-[11px] uppercase tracking-[0.22em] text-fg-muted">
-              The following operations cannot be undone. Confirmation required.
-            </p>
-            <div className="flex flex-wrap gap-3">
-              <button
-                type="button"
-                className="border border-hairline px-4 py-2 font-mono text-[11px] uppercase tracking-[0.32em] text-fg-muted transition-all duration-300 hover:border-hairline-strong hover:text-fg"
-              >
-                export all data
-              </button>
-              <button
-                type="button"
-                className="border border-accent bg-transparent px-4 py-2 font-mono text-[11px] uppercase tracking-[0.32em] text-accent transition-all duration-300 hover:bg-accent hover:text-surface hover:shadow-glow-soft"
-              >
-                wipe node
-              </button>
-            </div>
+            <Row label="CRUD" value="projects" tone="text-emerald-300" />
+            <Row label="Health panel" value="live API" tone="text-emerald-300" />
+            <Row label="Docker" value="compose ready" tone="text-emerald-300" />
+            <Row label="Docs" value="README checklist" tone="text-emerald-300" />
           </div>
         </PaneFrame>
       </div>

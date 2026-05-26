@@ -72,7 +72,7 @@ export default function TeamPage() {
                 <th className="px-6 py-3 text-left">role</th>
                 <th className="px-6 py-3 text-left">scope</th>
                 <th className="px-6 py-3 text-left">can deploy</th>
-                <th className="px-6 py-3 text-left">can invoke agents</th>
+                <th className="px-6 py-3 text-left">can manage projects</th>
               </tr>
             </thead>
             <tbody className="font-mono text-[11px] tracking-[0.05em] text-fg-muted">
@@ -92,7 +92,7 @@ export default function TeamPage() {
                 <td className="px-6 py-4">designer</td>
                 <td className="px-6 py-4">frontend</td>
                 <td className="px-6 py-4 text-amber-300">staging</td>
-                <td className="px-6 py-4 text-emerald-300">design only</td>
+                <td className="px-6 py-4 text-amber-300">review</td>
               </tr>
               <tr>
                 <td className="px-6 py-4">guest</td>

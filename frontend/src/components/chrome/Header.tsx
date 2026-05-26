@@ -12,9 +12,9 @@ export function Header() {
   }, []);
 
   return (
-    <header className="sticky top-0 z-30 flex h-16 items-center justify-between border-b border-hairline surface-overlay px-6">
-      <div className="flex items-center gap-6">
-        <span className="font-mono text-[11px] uppercase tracking-[0.32em] text-fg-muted">
+    <header className="sticky top-0 z-30 flex min-h-16 items-center justify-between gap-3 border-b border-hairline surface-overlay px-4 py-3 md:h-16 md:px-6 md:py-0">
+      <div className="flex min-w-0 items-center gap-3 md:gap-6">
+        <span className="truncate font-mono text-[10px] uppercase tracking-[0.22em] text-fg-muted md:text-[11px] md:tracking-[0.32em]">
           <span className="text-fg-faint">·</span> jotavtech
           <span className="mx-2 text-fg-faint">/</span>
           <span className="text-fg-subtle">{nodeId(now)}</span>
@@ -26,7 +26,7 @@ export function Header() {
         </span>
       </div>
 
-      <div className="flex items-center gap-3">
+      <div className="flex shrink-0 items-center gap-2 md:gap-3">
         <span className="hidden md:inline-flex items-center gap-2 border border-hairline px-2 py-1 font-mono text-[10px] uppercase tracking-[0.32em] text-fg-subtle">
           <Volume2 className="h-3 w-3" />
           snd
@@ -36,7 +36,7 @@ export function Header() {
           cinema
         </span>
         <ThemeToggle className="hidden md:inline-flex" />
-        <span className="font-mono text-[11px] uppercase tracking-[0.32em] text-fg-muted">
+        <span className="font-mono text-[10px] uppercase tracking-[0.22em] text-fg-muted md:text-[11px] md:tracking-[0.32em]">
           <span className="text-fg-faint">brt</span>
           <span className="mx-2 text-fg-faint">/</span>
           <span className="tabular-nums">{formatClock(now)}</span>

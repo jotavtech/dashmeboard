@@ -7,7 +7,6 @@ import {
   Users,
   Workflow,
   Database,
-  Bot,
   Settings,
   Circle,
   LogOut,
@@ -21,14 +20,13 @@ type NavItem = {
   icon: typeof LayoutDashboard;
 };
 
-const NAV: NavItem[] = [
+export const NAV: NavItem[] = [
   { to: "/", bracket: "D", label: "Dashboard", icon: LayoutDashboard },
   { to: "/projects", bracket: "P", label: "Projects", icon: FolderKanban },
   { to: "/analytics", bracket: "A", label: "Analytics", icon: BarChart3 },
   { to: "/team", bracket: "T", label: "Team", icon: Users },
   { to: "/workflows", bracket: "W", label: "Workflows", icon: Workflow },
   { to: "/database", bracket: "B", label: "Database", icon: Database },
-  { to: "/agents", bracket: "X", label: "Agents", icon: Bot },
   { to: "/settings", bracket: "S", label: "Settings", icon: Settings },
 ];
 
@@ -136,5 +134,48 @@ export function Sidebar() {
         </div>
       </div>
     </aside>
+  );
+}
+
+export function MobileNav() {
+  const items = NAV.filter((item) =>
+    ["/", "/projects", "/analytics", "/database", "/settings"].includes(item.to),
+  );
+
+  return (
+    <nav className="fixed inset-x-3 bottom-3 z-50 border border-hairline-strong bg-surface-sunken/90 shadow-pane backdrop-blur md:hidden">
+      <ul className="grid grid-cols-5">
+        {items.map((item) => (
+          <li key={item.to}>
+            <NavLink
+              to={item.to}
+              end={item.to === "/"}
+              aria-label={item.label}
+              className={({ isActive }) =>
+                cn(
+                  "relative flex h-14 flex-col items-center justify-center gap-1 font-mono text-[9px] uppercase tracking-[0.18em]",
+                  "transition-colors duration-300",
+                  isActive ? "text-fg" : "text-fg-subtle",
+                )
+              }
+            >
+              {({ isActive }) => (
+                <>
+                  {isActive && (
+                    <motion.span
+                      layoutId="mobile-active"
+                      className="absolute inset-x-3 top-0 h-px bg-accent"
+                      transition={{ type: "spring", stiffness: 360, damping: 34 }}
+                    />
+                  )}
+                  <item.icon className={cn("h-4 w-4", isActive ? "text-accent" : "text-fg-subtle")} />
+                  <span>{item.bracket}</span>
+                </>
+              )}
+            </NavLink>
+          </li>
+        ))}
+      </ul>
+    </nav>
   );
 }

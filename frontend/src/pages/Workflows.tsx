@@ -17,9 +17,9 @@ const RUNS: WorkflowRun[] = [
   { id: "1", name: "ci · frontend", branch: "main", status: "passed", duration: "1m 42s", timestamp: "08m" },
   { id: "2", name: "ci · backend", branch: "main", status: "passed", duration: "2m 18s", timestamp: "08m" },
   { id: "3", name: "sonarcloud", branch: "main", status: "running", duration: "—", timestamp: "07m" },
-  { id: "4", name: "ci · frontend", branch: "feature/agents", status: "passed", duration: "1m 50s", timestamp: "1h" },
-  { id: "5", name: "deploy · production", branch: "main", status: "passed", duration: "3m 04s", timestamp: "2h" },
-  { id: "6", name: "ci · backend", branch: "feature/agents", status: "failed", duration: "1m 02s", timestamp: "3h" },
+  { id: "4", name: "docker compose build", branch: "main", status: "passed", duration: "2m 04s", timestamp: "1h" },
+  { id: "5", name: "npm audit", branch: "main", status: "passed", duration: "28s", timestamp: "1h" },
+  { id: "6", name: "deploy · production", branch: "main", status: "passed", duration: "3m 04s", timestamp: "2h" },
 ];
 
 const STATUS = {

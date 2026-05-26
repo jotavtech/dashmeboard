@@ -1,6 +1,6 @@
 import { Outlet, useLocation } from "react-router-dom";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
-import { Sidebar } from "@/components/chrome/Sidebar";
+import { MobileNav, Sidebar } from "@/components/chrome/Sidebar";
 import { Header } from "@/components/chrome/Header";
 import { Grain } from "@/components/primitives/Grain";
 import { Scanlines } from "@/components/primitives/Scanlines";
@@ -18,7 +18,7 @@ export default function RootLayout() {
 
       <div className="flex min-w-0 flex-1 flex-col">
         <Header />
-        <main className="relative flex-1 overflow-x-hidden">
+        <main className="relative flex-1 overflow-x-hidden pb-20 md:pb-0">
           <AnimatePresence mode="wait" initial={false}>
             <motion.div
               key={location.pathname}
@@ -33,6 +33,7 @@ export default function RootLayout() {
           </AnimatePresence>
         </main>
       </div>
+      <MobileNav />
     </div>
   );
 }

@@ -1,73 +1,64 @@
 import { useQuery } from "@tanstack/react-query";
 import { motion } from "framer-motion";
-import { ArrowUpRight } from "lucide-react";
+import { ArrowUpRight, Database, Server, Wifi } from "lucide-react";
 import { ChromeText } from "@/components/primitives/ChromeText";
 import { TerminalLabel } from "@/components/primitives/TerminalLabel";
 import { StatGrid, type Stat } from "@/components/sections/StatGrid";
 import { ActivityFeed } from "@/components/sections/ActivityFeed";
 import { ThroughputChart } from "@/components/sections/ThroughputChart";
 import { Magnetic } from "@/components/primitives/Magnetic";
+import { PaneFrame } from "@/components/primitives/PaneFrame";
 import { greeting } from "@/lib/time";
 import { ease } from "@/lib/motion";
-import {
-  getOverview,
-  getActivity,
-  getThroughput,
-  type ActivityItem,
-  type Throughput,
-} from "@/services/analytics";
-
-const FALLBACK_OVERVIEW = {
-  activeProjects: 12,
-  completedTasks: 248,
-  activeUsers: 36,
-  weeklyPerformance: 94,
-  uptimePercent: 99.94,
-  pipelineRuns: 184,
-};
-
-const FALLBACK_ACTIVITY: ActivityItem[] = [
-  { id: "1", type: "deploy", title: "Deploy · backend v0.4.2", detail: "dashmeboard-api / production", timestamp: "02m" },
-  { id: "2", type: "commit", title: "feat(projects): add filter by priority", detail: "main · jotavtech", timestamp: "11m" },
-  { id: "3", type: "agent", title: "reviewer-agent · 2 suggestions", detail: "frontend/src/components/sections/StatGrid.tsx", timestamp: "26m" },
-  { id: "4", type: "project", title: "New project · NODE_27.12.05", detail: "owner: jotavtech", timestamp: "1h" },
-  { id: "5", type: "update", title: "Postgres maintenance window applied", detail: "no downtime", timestamp: "3h" },
-];
-
-const FALLBACK_THROUGHPUT: Throughput[] = [
-  { day: "MON", value: 24 },
-  { day: "TUE", value: 31 },
-  { day: "WED", value: 18 },
-  { day: "THU", value: 42 },
-  { day: "FRI", value: 38 },
-  { day: "SAT", value: 12 },
-  { day: "SUN", value: 9 },
-];
+import { getOverview, getActivity, getThroughput } from "@/services/analytics";
+import { getHealth } from "@/services/health";
 
 export default function DashboardPage() {
   const overview = useQuery({
     queryKey: ["analytics", "overview"],
     queryFn: getOverview,
-    placeholderData: FALLBACK_OVERVIEW,
   });
   const activity = useQuery({
     queryKey: ["analytics", "activity"],
     queryFn: () => getActivity(8),
-    placeholderData: FALLBACK_ACTIVITY,
   });
   const throughput = useQuery({
     queryKey: ["analytics", "throughput"],
     queryFn: getThroughput,
-    placeholderData: FALLBACK_THROUGHPUT,
+  });
+  const health = useQuery({
+    queryKey: ["health"],
+    queryFn: getHealth,
+    refetchInterval: 30_000,
   });
 
-  const o = overview.data ?? FALLBACK_OVERVIEW;
-
+  const o = overview.data;
   const stats: Stat[] = [
-    { index: "01", label: "Active projects", value: String(o.activeProjects), caption: "Across all owners, including drafts." },
-    { index: "02", label: "Tasks completed", value: String(o.completedTasks), caption: "Lifetime, rolling counter." },
-    { index: "03", label: "Active users", value: String(o.activeUsers), caption: "Last 7 days, distinct sessions." },
-    { index: "04", label: "Performance", value: String(o.weeklyPerformance), suffix: "%", caption: "Median p95 over the week." },
+    {
+      index: "01",
+      label: "Total projects",
+      value: formatMetric(o?.totalProjects, overview.isLoading),
+      caption: "Database-backed records managed by the CRUD.",
+    },
+    {
+      index: "02",
+      label: "Active projects",
+      value: formatMetric(o?.activeProjects, overview.isLoading),
+      caption: "Projects currently in execution.",
+    },
+    {
+      index: "03",
+      label: "Tasks completed",
+      value: formatMetric(o?.completedTasks, overview.isLoading),
+      caption: "Completed task records across all projects.",
+    },
+    {
+      index: "04",
+      label: "Completion rate",
+      value: formatMetric(o?.weeklyPerformance, overview.isLoading),
+      suffix: o || overview.isLoading ? "%" : undefined,
+      caption: "Calculated from completed tasks over total tasks.",
+    },
   ];
 
   return (
@@ -82,62 +73,136 @@ export default function DashboardPage() {
       >
         <div className="flex items-center justify-between">
           <TerminalLabel>· section 01 / production overview</TerminalLabel>
-          <TerminalLabel variant="rust">live</TerminalLabel>
+          <TerminalLabel variant={health.data?.status === "ok" ? "rust" : "default"}>
+            {health.isError ? "degraded" : health.data?.status ?? "checking"}
+          </TerminalLabel>
         </div>
 
         <h1 className="font-display tracking-tightest text-display-lg">
           <ChromeText variant="bright">{greeting()}.</ChromeText>{" "}
-          <ChromeText variant="muted">Operations are nominal.</ChromeText>
+          <ChromeText variant="muted">Dashmeboard is on stage.</ChromeText>
         </h1>
 
         <p className="max-w-2xl text-fg-muted leading-relaxed">
-          Real-time snapshot of pipelines, throughput and human signals across
-          every project orbiting this node. No prototype, no demo — production
-          surface.
+          Project operations, database health and presentation-critical signals
+          in one dark, cinematic control surface.
         </p>
 
         <div className="flex flex-wrap gap-3 pt-2">
-          <Magnetic>
-            <a
-              href="/projects"
-              className="group inline-flex items-center gap-3 border border-hairline-strong px-5 py-3 font-mono text-[11px] uppercase tracking-[0.32em] text-fg transition-all duration-300 hover:bg-accent hover:text-surface hover:border-accent hover:shadow-glow-soft"
-            >
-              [ open projects ]
-              <ArrowUpRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
-            </a>
-          </Magnetic>
-          <Magnetic>
-            <a
-              href="/agents"
-              className="group inline-flex items-center gap-3 border border-hairline px-5 py-3 font-mono text-[11px] uppercase tracking-[0.32em] text-fg-muted transition-all duration-300 hover:border-hairline-strong hover:text-fg hover:shadow-glow-soft"
-            >
-              [ inspect agents ]
-              <ArrowUpRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
-            </a>
-          </Magnetic>
+          <Cta href="/projects" label="[ manage projects ]" />
+          <Cta href="/database" label="[ inspect database ]" muted />
         </div>
       </motion.section>
 
       <section className="relative mt-14 md:mt-16">
-        <div className="mb-6 flex items-center justify-between">
+        <div className="mb-6 flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
           <TerminalLabel>· section 02 / production signals</TerminalLabel>
-          <span className="font-mono text-[10px] uppercase tracking-[0.32em] text-fg-subtle">
-            uptime <span className="text-fg-muted">{o.uptimePercent}%</span>
-            <span className="mx-3 text-fg-faint">/</span>
-            pipelines <span className="text-fg-muted">{o.pipelineRuns}</span>
-          </span>
+          {overview.isError && (
+            <span className="font-mono text-[10px] uppercase tracking-[0.24em] text-accent">
+              analytics API unavailable
+            </span>
+          )}
         </div>
         <StatGrid stats={stats} />
       </section>
 
       <section className="relative mt-14 grid grid-cols-1 gap-8 md:mt-16 md:gap-10 lg:grid-cols-5">
         <div className="lg:col-span-3">
-          <ActivityFeed items={activity.data ?? []} loading={activity.isLoading} />
+          <ActivityFeed
+            items={activity.data ?? []}
+            loading={activity.isLoading}
+            error={activity.isError}
+          />
         </div>
         <div className="lg:col-span-2">
-          <ThroughputChart data={throughput.data ?? FALLBACK_THROUGHPUT} />
+          <HealthPanel loading={health.isLoading} error={health.isError} data={health.data} />
         </div>
+      </section>
+
+      <section className="relative mt-8 md:mt-10">
+        <ThroughputChart data={throughput.data ?? []} />
       </section>
     </div>
   );
+}
+
+function Cta({ href, label, muted = false }: { href: string; label: string; muted?: boolean }) {
+  return (
+    <Magnetic>
+      <a
+        href={href}
+        className={
+          muted
+            ? "group inline-flex items-center gap-3 border border-hairline px-5 py-3 font-mono text-[11px] uppercase tracking-[0.32em] text-fg-muted transition-all duration-300 hover:border-hairline-strong hover:text-fg hover:shadow-glow-soft"
+            : "group inline-flex items-center gap-3 border border-hairline-strong bg-surface-sunken px-5 py-3 font-mono text-[11px] uppercase tracking-[0.32em] text-fg transition-all duration-300 hover:bg-accent hover:text-surface hover:border-accent hover:shadow-glow-soft"
+        }
+      >
+        {label}
+        <ArrowUpRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
+      </a>
+    </Magnetic>
+  );
+}
+
+function HealthPanel({
+  loading,
+  error,
+  data,
+}: {
+  loading: boolean;
+  error: boolean;
+  data?: Awaited<ReturnType<typeof getHealth>>;
+}) {
+  const rows = [
+    { icon: Wifi, label: "frontend", value: "online", tone: "text-emerald-300" },
+    {
+      icon: Server,
+      label: "backend",
+      value: loading ? "checking" : error ? "offline" : data?.services.api ?? "unknown",
+      tone: error ? "text-accent" : "text-emerald-300",
+    },
+    {
+      icon: Database,
+      label: "database",
+      value: loading ? "checking" : error ? "unknown" : data?.services.database ?? "unknown",
+      tone: data?.services.database === "down" || error ? "text-accent" : "text-emerald-300",
+    },
+  ];
+
+  return (
+    <PaneFrame index="05" label="System health" meta="live">
+      <div className="space-y-4 p-6">
+        {rows.map((row) => (
+          <div key={row.label} className="flex items-center justify-between border-b border-hairline pb-3 last:border-b-0">
+            <span className="inline-flex items-center gap-3 font-mono text-[10px] uppercase tracking-[0.28em] text-fg-subtle">
+              <row.icon className="h-3.5 w-3.5" />
+              {row.label}
+            </span>
+            <span className={`font-mono text-[11px] uppercase tracking-[0.24em] ${row.tone}`}>
+              {row.value}
+            </span>
+          </div>
+        ))}
+        <div className="grid grid-cols-2 gap-3 pt-2">
+          <MiniMetric label="latency" value={data ? `${data.latencyMs}ms` : "—"} />
+          <MiniMetric label="env" value={data?.environment ?? "—"} />
+        </div>
+      </div>
+    </PaneFrame>
+  );
+}
+
+function MiniMetric({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="border border-hairline bg-surface-raised/40 p-3">
+      <p className="font-mono text-[9px] uppercase tracking-[0.28em] text-fg-faint">· {label}</p>
+      <p className="mt-2 font-mono text-[12px] uppercase tracking-[0.16em] text-fg-muted">{value}</p>
+    </div>
+  );
+}
+
+function formatMetric(value: number | undefined, loading: boolean) {
+  if (loading) return "…";
+  if (typeof value === "number") return String(value);
+  return "—";
 }
