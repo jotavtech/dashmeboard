@@ -75,7 +75,7 @@ vercel --prod
 
 1. **Testar health**: `curl https://dashmeboard-api.onrender.com/api/health`
 2. **Atualizar `CORS_ORIGIN`** no Render com a URL final da Vercel
-3. **Smoke test** no browser: dashboard, projects (CRUD), theme toggle
+3. **Smoke test** no browser: dashboard, health panel, projects (CRUD), database view, theme toggle
 
 ---
 
