@@ -2,19 +2,42 @@ import { prisma } from "../lib/prisma.js";
 
 export const analyticsService = {
   async overview() {
-    const [activeProjects, completedTasks, activeUsers] = await Promise.all([
-      prisma.project.count({ where: { status: "ACTIVE" } }),
-      prisma.task.count({ where: { status: "DONE" } }),
-      prisma.user.count(),
-    ]);
-
-    return {
+    const [
+      totalProjects,
       activeProjects,
+      completedProjects,
+      totalTasks,
       completedTasks,
       activeUsers,
-      weeklyPerformance: 94,
-      uptimePercent: 99.94,
-      pipelineRuns: 184,
+      projectsByStatus,
+      projectsByPriority,
+    ] = await Promise.all([
+      prisma.project.count(),
+      prisma.project.count({ where: { status: "ACTIVE" } }),
+      prisma.project.count({ where: { status: "DONE" } }),
+      prisma.task.count(),
+      prisma.task.count({ where: { status: "DONE" } }),
+      prisma.user.count(),
+      prisma.project.groupBy({ by: ["status"], _count: { _all: true } }),
+      prisma.project.groupBy({ by: ["priority"], _count: { _all: true } }),
+    ]);
+
+    const weeklyPerformance = totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0;
+
+    return {
+      totalProjects,
+      activeProjects,
+      completedProjects,
+      totalTasks,
+      completedTasks,
+      activeUsers,
+      weeklyPerformance,
+      projectsByStatus: Object.fromEntries(
+        projectsByStatus.map((row) => [row.status, row._count._all]),
+      ),
+      projectsByPriority: Object.fromEntries(
+        projectsByPriority.map((row) => [row.priority, row._count._all]),
+      ),
     };
   },
 
@@ -73,6 +96,27 @@ export const analyticsService = {
     }
 
     return result;
+  },
+
+  async database() {
+    const [users, projects, tasks, analyticsLogs] = await Promise.all([
+      prisma.user.count(),
+      prisma.project.count(),
+      prisma.task.count(),
+      prisma.analyticsLog.count(),
+    ]);
+
+    return {
+      provider: "PostgreSQL",
+      orm: "Prisma",
+      schema: "public",
+      tables: [
+        { name: "users", columns: 6, rows: users, indexed: true },
+        { name: "projects", columns: 8, rows: projects, indexed: true },
+        { name: "tasks", columns: 9, rows: tasks, indexed: true },
+        { name: "analytics_logs", columns: 4, rows: analyticsLogs, indexed: true },
+      ],
+    };
   },
 };
 

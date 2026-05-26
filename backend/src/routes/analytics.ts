@@ -25,3 +25,10 @@ analyticsRouter.get(
     res.json(await analyticsService.throughput());
   }),
 );
+
+analyticsRouter.get(
+  "/database",
+  asyncHandler(async (_req, res) => {
+    res.json(await analyticsService.database());
+  }),
+);

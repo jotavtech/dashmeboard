@@ -28,8 +28,8 @@ async function main() {
       owner: "jotavtech@dashme.io",
     },
     {
-      title: "Agents subsystem (local)",
-      description: "Architect, frontend, backend, devops, design, docs, reviewer.",
+      title: "Presentation health center",
+      description: "Backend, database and frontend checks exposed for academic evaluation.",
       status: ProjectStatus.ACTIVE,
       priority: ProjectPriority.HIGH,
       owner: "jotavtech@dashme.io",
@@ -64,7 +64,7 @@ async function main() {
     },
     {
       title: "Public docs site",
-      description: "Surface architecture, design system and agent contracts.",
+      description: "Surface architecture, design system and setup contracts.",
       status: ProjectStatus.PLANNED,
       priority: ProjectPriority.MEDIUM,
       owner: "amartins@dashme.io",
@@ -87,10 +87,10 @@ async function main() {
   const today = new Date();
 
   for (const proj of allProjects) {
-    const n = 3 + Math.floor(Math.random() * 4);
+    const n = 3 + (proj.title.length % 4);
     for (let i = 0; i < n; i++) {
-      const done = Math.random() > 0.4;
-      const ago = Math.floor(Math.random() * 7);
+      const done = (i + proj.title.length) % 3 !== 0;
+      const ago = (i + proj.title.length) % 7;
       const completedAt = new Date(today);
       completedAt.setDate(completedAt.getDate() - ago);
 
@@ -98,7 +98,7 @@ async function main() {
         data: {
           title: `Task ${i + 1} · ${proj.title.split(" ").slice(0, 3).join(" ")}`,
           description: null,
-          status: done ? TaskStatus.DONE : (Math.random() > 0.5 ? TaskStatus.DOING : TaskStatus.TODO),
+          status: done ? TaskStatus.DONE : (i % 2 === 0 ? TaskStatus.DOING : TaskStatus.TODO),
           projectId: proj.id,
           assignee: proj.owner,
           completedAt: done ? completedAt : null,

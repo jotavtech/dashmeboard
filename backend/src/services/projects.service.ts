@@ -39,6 +39,7 @@ export const projectsService = {
     priority: ProjectPriority;
     owner: string;
   }) {
+    await ensureOwner(data.owner);
     return prisma.project.create({ data });
   },
 
@@ -54,6 +55,7 @@ export const projectsService = {
   ) {
     const existing = await prisma.project.findUnique({ where: { id } });
     if (!existing) throw new HttpError(404, "Project not found");
+    if (data.owner) await ensureOwner(data.owner);
     return prisma.project.update({ where: { id }, data });
   },
 
@@ -63,3 +65,12 @@ export const projectsService = {
     await prisma.project.delete({ where: { id } });
   },
 };
+
+async function ensureOwner(email: string) {
+  const name = email.split("@")[0] || "operator";
+  await prisma.user.upsert({
+    where: { email },
+    update: {},
+    create: { email, name },
+  });
+}

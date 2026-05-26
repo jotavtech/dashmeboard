@@ -16,7 +16,7 @@ const createBody = z.object({
   description: z.string().max(2000).nullable().optional(),
   status: StatusEnum.default("PLANNED"),
   priority: PriorityEnum.default("MEDIUM"),
-  owner: z.string().trim().min(1).max(120),
+  owner: z.string().trim().email().max(120),
 });
 
 const updateBody = createBody.partial();
