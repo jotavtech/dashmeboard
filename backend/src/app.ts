@@ -7,6 +7,7 @@ import { errorHandler, notFound } from "./middlewares/error.js";
 import { healthRouter } from "./routes/health.js";
 import { projectsRouter } from "./routes/projects.js";
 import { analyticsRouter } from "./routes/analytics.js";
+import { aiRouter } from "./routes/ai.js";
 
 export function createApp() {
   const app = express();
@@ -24,6 +25,7 @@ export function createApp() {
   app.use("/api/health", healthRouter);
   app.use("/api/projects", projectsRouter);
   app.use("/api/analytics", analyticsRouter);
+  app.use("/api/ai", aiRouter);
 
   app.use(notFound);
   app.use(errorHandler);

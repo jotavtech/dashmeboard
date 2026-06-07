@@ -95,3 +95,16 @@ model AnalyticsLog {
   @@index([kind, createdAt])
   @@map("analytics_logs")
 }
+
+model AiInsight {
+  id        String   @id @default(uuid())
+  type      String
+  prompt    String
+  output    String
+  context   Json?
+  model     String
+  createdAt DateTime @default(now())
+
+  @@index([type, createdAt])
+  @@map("ai_insights")
+}

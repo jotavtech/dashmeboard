@@ -11,7 +11,8 @@ Important: this repository preserves the current Dashmeboard purpose and improve
 | Frontend | React 19, Vite, TypeScript, Tailwind CSS, Framer Motion, TanStack Query |
 | Backend | Node.js, Express, TypeScript, Zod, Helmet, CORS |
 | Database | PostgreSQL 16, Prisma ORM and committed migrations |
-| DevOps | Docker Compose, GitHub Actions, SonarCloud |
+| AI | OpenAI API (Responses), called only from the backend, insights persisted |
+| DevOps | Docker Compose, GitHub Actions, SonarCloud, Railway, Vercel |
 | Quality | ESLint 9, TypeScript strict mode, Vitest, Supertest, npm audit |
 
 ## Architecture
@@ -44,6 +45,8 @@ Main variables:
 | `CORS_ORIGIN` | Allowed frontend origin | `http://localhost:5173` |
 | `BACKEND_PORT` | API port | `4000` |
 | `VITE_API_URL` | Frontend API URL | `http://localhost:4000/api` |
+| `OPENAI_API_KEY` | OpenAI key (backend only, optional) | unset → AI routes return `503` |
+| `OPENAI_MODEL` | OpenAI model for generations | `gpt-4o` |
 | `POSTGRES_*` | Docker database settings | see `.env.example` |
 
 ## Local Development
@@ -112,6 +115,13 @@ Base URL: `/api`
 | `GET` | `/analytics/activity` | Recent project and task activity |
 | `GET` | `/analytics/throughput` | Completed tasks over the last 7 days |
 | `GET` | `/analytics/database` | Public schema table snapshot |
+| `GET` | `/ai/insights` | List persisted AI insights (most recent first) |
+| `POST` | `/ai/insights` | Generate a dashboard insight from live data (rate-limited) |
+| `POST` | `/ai/project-plan` | Generate an execution plan for a project (rate-limited) |
+
+## Deployment
+
+Production runs on **Vercel** (frontend) → **Railway** (backend) → **Railway PostgreSQL**, with OpenAI called only from the backend. Full step-by-step in [`DEPLOY.md`](DEPLOY.md).
 
 ## Quality Gates
 

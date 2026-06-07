@@ -8,6 +8,7 @@ import {
   Workflow,
   Database,
   Settings,
+  Sparkles,
   Circle,
   LogOut,
 } from "lucide-react";
@@ -26,6 +27,7 @@ export const NAV: NavItem[] = [
   { to: "/analytics", bracket: "A", label: "Analytics", icon: BarChart3 },
   { to: "/team", bracket: "T", label: "Team", icon: Users },
   { to: "/workflows", bracket: "W", label: "Workflows", icon: Workflow },
+  { to: "/ai", bracket: "AI", label: "AI Center", icon: Sparkles },
   { to: "/database", bracket: "B", label: "Database", icon: Database },
   { to: "/settings", bracket: "S", label: "Settings", icon: Settings },
 ];
@@ -139,12 +141,12 @@ export function Sidebar() {
 
 export function MobileNav() {
   const items = NAV.filter((item) =>
-    ["/", "/projects", "/analytics", "/database", "/settings"].includes(item.to),
+    ["/", "/projects", "/analytics", "/ai", "/database", "/settings"].includes(item.to),
   );
 
   return (
     <nav className="fixed inset-x-3 bottom-3 z-50 border border-hairline-strong bg-surface-sunken/90 shadow-pane backdrop-blur md:hidden">
-      <ul className="grid grid-cols-5">
+      <ul className="grid grid-cols-6">
         {items.map((item) => (
           <li key={item.to}>
             <NavLink

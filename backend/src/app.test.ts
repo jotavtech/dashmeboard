@@ -77,3 +77,20 @@ describe("projects CRUD", () => {
     expect(res.body.issues.owner).toBeDefined();
   });
 });
+
+describe("ai insights", () => {
+  // Read-only: never triggers a paid OpenAI call.
+  it("lists persisted insights as an array", async () => {
+    const res = await request(app).get("/api/ai/insights").expect(200);
+    expect(Array.isArray(res.body)).toBe(true);
+  });
+
+  it("rejects an invalid project-plan payload", async () => {
+    const res = await request(app)
+      .post("/api/ai/project-plan")
+      .send({ projectId: "not-a-uuid" })
+      .expect(400);
+
+    expect(res.body.message).toBe("Validation failed");
+  });
+});

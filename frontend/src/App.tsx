@@ -7,6 +7,7 @@ const ProjectsPage = lazy(() => import("./pages/Projects"));
 const AnalyticsPage = lazy(() => import("./pages/Analytics"));
 const TeamPage = lazy(() => import("./pages/Team"));
 const WorkflowsPage = lazy(() => import("./pages/Workflows"));
+const AiCenterPage = lazy(() => import("./pages/AiCenter"));
 const DatabasePage = lazy(() => import("./pages/Database"));
 const SettingsPage = lazy(() => import("./pages/Settings"));
 
@@ -19,6 +20,7 @@ export default function App() {
         <Route path="/analytics" element={<RouteFallback><AnalyticsPage /></RouteFallback>} />
         <Route path="/team" element={<RouteFallback><TeamPage /></RouteFallback>} />
         <Route path="/workflows" element={<RouteFallback><WorkflowsPage /></RouteFallback>} />
+        <Route path="/ai" element={<RouteFallback><AiCenterPage /></RouteFallback>} />
         <Route path="/database" element={<RouteFallback><DatabasePage /></RouteFallback>} />
         <Route path="/settings" element={<RouteFallback><SettingsPage /></RouteFallback>} />
         <Route path="*" element={<Navigate to="/" replace />} />
