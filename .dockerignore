@@ -12,6 +12,10 @@ backend/coverage
 frontend/coverage
 .env
 .env.*
+# Match env files at any depth (e.g. backend/.env) so secrets never enter the
+# build context / image. Plain ".env" only matches the context root.
+**/.env
+**/.env.*
 *.log
 *.tsbuildinfo
 .cache
