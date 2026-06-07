@@ -3,7 +3,11 @@
 # workspace here). Only the backend is built and run.
 FROM node:20-alpine
 WORKDIR /app
-ENV NODE_ENV=production
+
+# NOTE: NODE_ENV is intentionally NOT set to "production" here. With
+# NODE_ENV=production, `npm ci` skips devDependencies (typescript, @types/*,
+# tsc), which the build needs. It is set to production further down, so it only
+# affects the runtime, not the install/build.
 
 # Install workspace dependencies deterministically from the root lockfile.
 # All three manifests are required for `npm ci` to resolve the workspace graph.
@@ -18,6 +22,10 @@ RUN npm run db:generate --workspace backend
 RUN npm run build --workspace backend
 
 WORKDIR /app/backend
+
+# Runtime-only: enables production behaviour without having starved the build
+# of devDependencies above.
+ENV NODE_ENV=production
 EXPOSE 4000
 
 # Apply any pending migrations, then start the API. The app binds to $PORT
