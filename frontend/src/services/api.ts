@@ -1,10 +1,17 @@
 import axios from "axios";
 
-const baseURL =
-  import.meta.env.VITE_API_URL ??
-  (import.meta.env.DEV
-    ? "http://localhost:4000/api"
-    : "https://dashmeboard-api-production.up.railway.app/api");
+const productionApiURL = "https://dashmeboard-api-production.up.railway.app/api";
+
+function resolveBaseURL() {
+  const configured = import.meta.env.VITE_API_URL?.trim();
+  if (import.meta.env.DEV) return configured || "http://localhost:4000/api";
+  if (configured?.startsWith("http://") || configured?.startsWith("https://")) {
+    return configured;
+  }
+  return productionApiURL;
+}
+
+const baseURL = resolveBaseURL();
 
 export const api = axios.create({
   baseURL,
