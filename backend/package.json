@@ -28,6 +28,9 @@
     "pg": "^8.21.0",
     "zod": "^3.24.1"
   },
+  "prisma": {
+    "schema": "prisma/schema.prisma"
+  },
   "devDependencies": {
     "@eslint/js": "^9.18.0",
     "@types/cors": "^2.8.17",
