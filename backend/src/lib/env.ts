@@ -3,6 +3,9 @@ import { z } from "zod";
 
 const schema = z.object({
   NODE_ENV: z.enum(["development", "production", "test"]).default("development"),
+  // Railway (and most PaaS) inject PORT and route traffic to it. Prefer it when
+  // present; fall back to BACKEND_PORT for local development.
+  PORT: z.coerce.number().optional(),
   BACKEND_PORT: z.coerce.number().default(4000),
   DATABASE_URL: z.string().url(),
   CORS_ORIGIN: z.string().default("http://localhost:5173"),
