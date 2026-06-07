@@ -42,12 +42,14 @@ Build & start come from the root [`railway.json`](railway.json) and
 
 ```
 Build:  npm ci && npm run db:generate --workspace backend && npm run build --workspace backend
-Start:  npx prisma migrate deploy --schema=./prisma/schema.prisma && node dist/index.js
+Start:  npx prisma migrate deploy --schema=./prisma/schema.prisma || echo ...; node dist/index.js
 Health: /api/health
 ```
 
 `prisma migrate deploy` runs on every start, so the schema (including
-`ai_insights`) is applied automatically.
+`ai_insights`) is applied automatically when the database is reachable. The API
+liveness route still starts if the database is not ready; use
+`/api/health/ready` to verify database readiness.
 
 ### Environment variables (backend service)
 

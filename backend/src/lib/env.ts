@@ -7,7 +7,10 @@ const schema = z.object({
   // present; fall back to BACKEND_PORT for local development.
   PORT: z.coerce.number().optional(),
   BACKEND_PORT: z.coerce.number().default(4000),
-  DATABASE_URL: z.string().url(),
+  // Optional at boot so the platform liveness check can pass even while the
+  // database is being configured. DB-backed routes and readiness still fail
+  // clearly until the variable is set.
+  DATABASE_URL: z.string().url().optional(),
   CORS_ORIGIN: z.string().default("http://localhost:5173"),
   // Optional on purpose: the app (and the test suite) must boot without an
   // OpenAI key. AI routes degrade to a 503 at call time instead of crashing

@@ -28,6 +28,6 @@ WORKDIR /app/backend
 ENV NODE_ENV=production
 EXPOSE 4000
 
-# Apply any pending migrations, then start the API. The app binds to $PORT
-# (injected by Railway), falling back to BACKEND_PORT locally.
-CMD ["sh", "-c", "npx prisma migrate deploy --schema=./prisma/schema.prisma && node dist/index.js"]
+# Apply pending migrations when the database is reachable, then start the API.
+# Liveness must still come up if DB variables are being fixed in the platform.
+CMD ["sh", "-c", "npx prisma migrate deploy --schema=./prisma/schema.prisma || echo '[dashmeboard-api] migrate deploy skipped or failed; starting API for liveness'; node dist/index.js"]
