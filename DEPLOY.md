@@ -35,13 +35,14 @@ Vercel (frontend) ──▶ Railway (backend) ──▶ Railway PostgreSQL
 Create a service from the GitHub repo:
 
 - **New** → **GitHub Repo** → `jotavtech/dashmeboard`
-- **Settings → Root Directory**: `backend`
+- **Settings → Root Directory**: leave empty so Railway builds from the repo root
 
-Build & start come from [`backend/railway.json`](backend/railway.json):
+Build & start come from the root [`railway.json`](railway.json) and
+[`Dockerfile`](Dockerfile):
 
 ```
-Build:  npm install && npx prisma generate && npm run build
-Start:  npx prisma migrate deploy && npm run start
+Build:  npm ci && npm run db:generate --workspace backend && npm run build --workspace backend
+Start:  npx prisma migrate deploy --schema=./prisma/schema.prisma && node dist/index.js
 Health: /api/health
 ```
 
@@ -69,6 +70,7 @@ Verify:
 
 ```bash
 curl https://YOUR-BACKEND.up.railway.app/api/health
+curl https://YOUR-BACKEND.up.railway.app/api/health/ready
 ```
 
 ---
@@ -107,6 +109,7 @@ After the first Vercel deploy:
 
 ```bash
 curl https://YOUR-BACKEND.up.railway.app/api/health
+curl https://YOUR-BACKEND.up.railway.app/api/health/ready
 curl https://YOUR-BACKEND.up.railway.app/api/projects
 curl https://YOUR-BACKEND.up.railway.app/api/analytics/overview
 curl https://YOUR-BACKEND.up.railway.app/api/ai/insights        # [] until generated

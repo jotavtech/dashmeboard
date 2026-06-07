@@ -67,6 +67,7 @@ Services:
 | Frontend | http://localhost:5173 |
 | Backend API | http://localhost:4000/api |
 | Health check | http://localhost:4000/api/health |
+| Readiness check | http://localhost:4000/api/health/ready |
 | PostgreSQL | localhost:5432 |
 
 ## Docker Execution
@@ -105,7 +106,8 @@ Base URL: `/api`
 
 | Method | Endpoint | Description |
 | --- | --- | --- |
-| `GET` | `/health` | API, database, uptime and environment status |
+| `GET` | `/health` | API liveness, uptime and environment status |
+| `GET` | `/health/ready` | API and database readiness status |
 | `GET` | `/projects` | List projects with search/status/priority filters |
 | `POST` | `/projects` | Create a project with Zod validation |
 | `GET` | `/projects/:id` | Fetch one project |

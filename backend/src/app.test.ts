@@ -25,8 +25,15 @@ afterAll(async () => {
 });
 
 describe("health", () => {
-  it("reports API and database status", async () => {
+  it("reports API liveness", async () => {
     const res = await request(app).get("/api/health").expect(200);
+
+    expect(res.body.status).toBe("ok");
+    expect(res.body.services.api).toBe("up");
+  });
+
+  it("reports API and database readiness", async () => {
+    const res = await request(app).get("/api/health/ready").expect(200);
 
     expect(res.body.status).toBe("ok");
     expect(res.body.services.database).toBe("up");
