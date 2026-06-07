@@ -28,6 +28,6 @@ WORKDIR /app/backend
 ENV NODE_ENV=production
 EXPOSE 4000
 
-# Apply pending migrations when the database is reachable, then start the API.
-# Liveness must still come up if DB variables are being fixed in the platform.
-CMD ["sh", "-c", "npx prisma migrate deploy --schema=./prisma/schema.prisma || echo '[dashmeboard-api] migrate deploy skipped or failed; starting API for liveness'; node dist/index.js"]
+# Start the API immediately so Railway liveness can pass. Run migrations as a
+# separate deploy step or manually once DATABASE_URL is confirmed.
+CMD ["node", "dist/index.js"]

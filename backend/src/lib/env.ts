@@ -1,12 +1,17 @@
 import "dotenv/config";
 import { z } from "zod";
 
+const optionalPort = z.preprocess(
+  (value) => (value === "" ? undefined : value),
+  z.coerce.number().int().positive().optional(),
+);
+
 const schema = z.object({
   NODE_ENV: z.enum(["development", "production", "test"]).default("development"),
   // Railway (and most PaaS) inject PORT and route traffic to it. Prefer it when
   // present; fall back to BACKEND_PORT for local development.
-  PORT: z.coerce.number().optional(),
-  BACKEND_PORT: z.coerce.number().default(4000),
+  PORT: optionalPort,
+  BACKEND_PORT: optionalPort.default(4000),
   // Optional at boot so the platform liveness check can pass even while the
   // database is being configured. DB-backed routes and readiness still fail
   // clearly until the variable is set.

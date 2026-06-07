@@ -5,10 +5,11 @@ import { disconnect } from "./lib/prisma.js";
 const app = createApp();
 
 const port = env.PORT ?? env.BACKEND_PORT;
+const host = "0.0.0.0";
 
-const server = app.listen(port, () => {
+const server = app.listen(port, host, () => {
   console.log(
-    `[dashmeboard-api] listening on http://localhost:${port}/api (${env.NODE_ENV})`,
+    `[dashmeboard-api] listening on http://${host}:${port}/api (${env.NODE_ENV})`,
   );
 });
 
