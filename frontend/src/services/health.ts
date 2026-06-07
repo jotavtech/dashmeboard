@@ -13,7 +13,7 @@ export type HealthStatus = {
 
 export async function getHealth() {
   const startedAt = performance.now();
-  const { data } = await api.get<HealthStatus>("/health");
+  const { data } = await api.get<HealthStatus>("/health/ready");
 
   return {
     ...data,
