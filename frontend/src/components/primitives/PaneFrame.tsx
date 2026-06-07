@@ -21,7 +21,7 @@ function Corner({ pos }: { pos: "tl" | "tr" | "bl" | "br" }) {
     br: "bottom-0 right-0",
   } as const;
   return (
-    <span className={cn("pointer-events-none absolute h-3 w-3", map[pos])}>
+    <span className={cn("pointer-events-none absolute z-10 h-3 w-3", map[pos])}>
       <span
         className={cn(
           "absolute h-px w-3 bg-fg-subtle",
@@ -66,7 +66,7 @@ export function PaneFrame({
       <Corner pos="br" />
 
       {(label || meta) && (
-        <div className="pointer-events-none absolute -top-3 left-3 right-3 flex items-center justify-between">
+        <div className="pointer-events-none absolute -top-3 left-3 right-3 z-20 flex items-center justify-between">
           {label && (
             <span className="bg-surface px-2 py-0.5 font-mono text-[10px] uppercase tracking-[0.32em]">
               {index && (
