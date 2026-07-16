@@ -19,6 +19,12 @@ async function main() {
   });
 
   console.log("[seed] projects…");
+  const inDays = (days: number) => {
+    const d = new Date();
+    d.setDate(d.getDate() + days);
+    return d;
+  };
+
   const projects = [
     {
       title: "Dashmeboard core platform",
@@ -26,6 +32,13 @@ async function main() {
       status: ProjectStatus.ACTIVE,
       priority: ProjectPriority.CRITICAL,
       owner: "jotavtech@dashme.io",
+      deadline: inDays(5),
+      client: "interno",
+      repoUrl: "https://github.com/jotavtech/dashmeboard",
+      docsUrl: "https://github.com/jotavtech/dashmeboard/blob/main/docs/PRD-V2.md",
+      activeBranch: "main",
+      tags: ["dashboard", "v2"],
+      notes: "## Contexto\n\nProjeto demo do seed. Substitua pelo `db:seed:real` com seus projetos.",
     },
     {
       title: "Presentation health center",
@@ -33,6 +46,8 @@ async function main() {
       status: ProjectStatus.ACTIVE,
       priority: ProjectPriority.HIGH,
       owner: "jotavtech@dashme.io",
+      deadline: inDays(-2),
+      tags: ["infra"],
     },
     {
       title: "Postgres → analytics pipelines",
@@ -93,6 +108,8 @@ async function main() {
       const ago = (i + proj.title.length) % 7;
       const completedAt = new Date(today);
       completedAt.setDate(completedAt.getDate() - ago);
+      const dueDate = new Date(today);
+      dueDate.setDate(dueDate.getDate() + ((i + proj.title.length) % 10) - 3);
 
       await prisma.task.create({
         data: {
@@ -102,6 +119,8 @@ async function main() {
           projectId: proj.id,
           assignee: proj.owner,
           completedAt: done ? completedAt : null,
+          dueDate: done ? null : dueDate,
+          order: i,
         },
       });
     }

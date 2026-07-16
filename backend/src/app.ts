@@ -6,6 +6,7 @@ import { env } from "./lib/env.js";
 import { errorHandler, notFound } from "./middlewares/error.js";
 import { healthRouter } from "./routes/health.js";
 import { projectsRouter } from "./routes/projects.js";
+import { tasksRouter } from "./routes/tasks.js";
 import { analyticsRouter } from "./routes/analytics.js";
 import { aiRouter } from "./routes/ai.js";
 
@@ -24,6 +25,7 @@ export function createApp() {
 
   app.use("/api/health", healthRouter);
   app.use("/api/projects", projectsRouter);
+  app.use("/api/tasks", tasksRouter);
   app.use("/api/analytics", analyticsRouter);
   app.use("/api/ai", aiRouter);
 

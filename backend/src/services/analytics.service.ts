@@ -1,3 +1,4 @@
+import type { Prisma } from "@prisma/client";
 import { prisma } from "../lib/prisma.js";
 
 export const analyticsService = {
@@ -98,6 +99,43 @@ export const analyticsService = {
     return result;
   },
 
+  async deadlines() {
+    const now = new Date();
+    const soon = new Date(now);
+    soon.setDate(soon.getDate() + 7);
+
+    const openProject: Prisma.ProjectWhereInput = { status: { notIn: ["DONE", "ARCHIVED"] } };
+    const openTask: Prisma.TaskWhereInput = { status: { not: "DONE" } };
+    const taskInclude = { project: { select: { id: true, title: true } } };
+
+    const [overdueProjects, upcomingProjects, overdueTasks, upcomingTasks] = await Promise.all([
+      prisma.project.findMany({
+        where: { ...openProject, deadline: { lt: now } },
+        orderBy: { deadline: "asc" },
+        take: 20,
+      }),
+      prisma.project.findMany({
+        where: { ...openProject, deadline: { gte: now, lte: soon } },
+        orderBy: { deadline: "asc" },
+        take: 20,
+      }),
+      prisma.task.findMany({
+        where: { ...openTask, dueDate: { lt: now } },
+        orderBy: { dueDate: "asc" },
+        take: 20,
+        include: taskInclude,
+      }),
+      prisma.task.findMany({
+        where: { ...openTask, dueDate: { gte: now, lte: soon } },
+        orderBy: { dueDate: "asc" },
+        take: 20,
+        include: taskInclude,
+      }),
+    ]);
+
+    return { overdueProjects, upcomingProjects, overdueTasks, upcomingTasks };
+  },
+
   async database() {
     const [users, projects, tasks, analyticsLogs] = await Promise.all([
       prisma.user.count(),
@@ -112,8 +150,8 @@ export const analyticsService = {
       schema: "public",
       tables: [
         { name: "users", columns: 6, rows: users, indexed: true },
-        { name: "projects", columns: 8, rows: projects, indexed: true },
-        { name: "tasks", columns: 9, rows: tasks, indexed: true },
+        { name: "projects", columns: 16, rows: projects, indexed: true },
+        { name: "tasks", columns: 11, rows: tasks, indexed: true },
         { name: "analytics_logs", columns: 4, rows: analyticsLogs, indexed: true },
       ],
     };

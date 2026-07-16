@@ -61,6 +61,16 @@ model Project {
   createdAt   DateTime        @default(now())
   updatedAt   DateTime        @updatedAt
 
+  // V2 — contexto de acompanhamento real
+  deadline     DateTime?
+  client       String?
+  repoUrl      String?
+  deployUrl    String?
+  docsUrl      String?
+  activeBranch String?
+  notes        String?  @db.Text
+  tags         String[] @default([])
+
   tasks       Task[]
 
   @@index([status])
@@ -80,6 +90,8 @@ model Task {
   createdAt   DateTime   @default(now())
   updatedAt   DateTime   @updatedAt
   completedAt DateTime?
+  dueDate     DateTime?
+  order       Int        @default(0)
 
   @@index([projectId])
   @@index([status])

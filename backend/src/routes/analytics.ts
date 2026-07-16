@@ -27,6 +27,13 @@ analyticsRouter.get(
 );
 
 analyticsRouter.get(
+  "/deadlines",
+  asyncHandler(async (_req, res) => {
+    res.json(await analyticsService.deadlines());
+  }),
+);
+
+analyticsRouter.get(
   "/database",
   asyncHandler(async (_req, res) => {
     res.json(await analyticsService.database());

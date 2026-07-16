@@ -5,10 +5,20 @@ import { projectsService } from "../services/projects.service.js";
 const StatusEnum = z.enum(["PLANNED", "ACTIVE", "PAUSED", "DONE", "ARCHIVED"]);
 const PriorityEnum = z.enum(["LOW", "MEDIUM", "HIGH", "CRITICAL"]);
 
+const emptyToNull = (value: unknown) =>
+  typeof value === "string" && value.trim() === "" ? null : value;
+
+const optionalUrl = z.preprocess(
+  emptyToNull,
+  z.string().trim().url().max(400).nullable().optional(),
+);
+
 const listQuery = z.object({
   q: z.string().trim().min(1).max(100).optional(),
   status: StatusEnum.optional(),
   priority: PriorityEnum.optional(),
+  tag: z.string().trim().min(1).max(40).optional(),
+  client: z.string().trim().min(1).max(120).optional(),
 });
 
 const createBody = z.object({
@@ -17,6 +27,14 @@ const createBody = z.object({
   status: StatusEnum.default("PLANNED"),
   priority: PriorityEnum.default("MEDIUM"),
   owner: z.string().trim().email().max(120),
+  deadline: z.preprocess(emptyToNull, z.coerce.date().nullable().optional()),
+  client: z.preprocess(emptyToNull, z.string().trim().max(120).nullable().optional()),
+  repoUrl: optionalUrl,
+  deployUrl: optionalUrl,
+  docsUrl: optionalUrl,
+  activeBranch: z.preprocess(emptyToNull, z.string().trim().max(120).nullable().optional()),
+  notes: z.preprocess(emptyToNull, z.string().max(20000).nullable().optional()),
+  tags: z.array(z.string().trim().min(1).max(40)).max(20).optional(),
 });
 
 const updateBody = createBody.partial();
