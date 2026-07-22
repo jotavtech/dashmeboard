@@ -1,9 +1,12 @@
 import express from "express";
+import cookieParser from "cookie-parser";
 import cors from "cors";
 import helmet from "helmet";
 import morgan from "morgan";
 import { env } from "./lib/env.js";
+import { requireAuth } from "./middlewares/auth.js";
 import { errorHandler, notFound } from "./middlewares/error.js";
+import { authRouter } from "./routes/auth.js";
 import { healthRouter } from "./routes/health.js";
 import { projectsRouter } from "./routes/projects.js";
 import { tasksRouter } from "./routes/tasks.js";
@@ -21,13 +24,15 @@ export function createApp() {
     }),
   );
   app.use(express.json({ limit: "1mb" }));
+  app.use(cookieParser());
   if (env.NODE_ENV !== "test") app.use(morgan("dev"));
 
   app.use("/api/health", healthRouter);
-  app.use("/api/projects", projectsRouter);
-  app.use("/api/tasks", tasksRouter);
-  app.use("/api/analytics", analyticsRouter);
-  app.use("/api/ai", aiRouter);
+  app.use("/api/auth", authRouter);
+  app.use("/api/projects", requireAuth, projectsRouter);
+  app.use("/api/tasks", requireAuth, tasksRouter);
+  app.use("/api/analytics", requireAuth, analyticsRouter);
+  app.use("/api/ai", requireAuth, aiRouter);
 
   app.use(notFound);
   app.use(errorHandler);

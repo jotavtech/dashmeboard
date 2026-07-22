@@ -25,11 +25,27 @@ const schema = z.object({
   // string, so empty must behave the same as unset.
   OPENAI_API_KEY: z.preprocess(emptyToUndefined, z.string().min(1).optional()),
   OPENAI_MODEL: z.preprocess(emptyToUndefined, z.string().min(1).default("gpt-4o")),
+  // Auth (ADR-001). JWT_SECRET has a dev fallback but production must set it —
+  // enforced below, not in the schema, so tests and local boots stay simple.
+  JWT_SECRET: z.preprocess(
+    emptyToUndefined,
+    z.string().min(32).default("dev-only-secret-change-me-0123456789abcdef"),
+  ),
+  ACCESS_TOKEN_TTL_MIN: z.preprocess(emptyToUndefined, z.coerce.number().int().positive().default(15)),
+  REFRESH_TOKEN_TTL_DAYS: z.preprocess(emptyToUndefined, z.coerce.number().int().positive().default(30)),
 });
 
 const parsed = schema.safeParse(process.env);
 if (!parsed.success) {
   console.error("[env] invalid environment", parsed.error.flatten().fieldErrors);
+  process.exit(1);
+}
+
+if (
+  parsed.data.NODE_ENV === "production" &&
+  parsed.data.JWT_SECRET === "dev-only-secret-change-me-0123456789abcdef"
+) {
+  console.error("[env] JWT_SECRET must be set in production");
   process.exit(1);
 }
 
