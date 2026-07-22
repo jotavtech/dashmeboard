@@ -2,7 +2,7 @@ import request from "supertest";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { createApp } from "./app.js";
 import { disconnect } from "./lib/prisma.js";
-import { resetAllData } from "./test/authHelper.js";
+import { resetAllData, TEST_PASSWORD } from "./test/authHelper.js";
 
 // Isolated file: the login limiter is module-level state, so exhausting it
 // here must not bleed into the other suites (vitest isolates per file).
@@ -22,7 +22,7 @@ describe("auth rate limiting", () => {
     for (let i = 0; i < 21; i++) {
       const res = await request(app)
         .post("/api/auth/login")
-        .send({ email: "brute@dashme.io", password: "wrong-password" });
+        .send({ email: "brute@dashme.io", password: `${TEST_PASSWORD}-wrong` });
       last = res.status;
     }
     expect(last).toBe(429);

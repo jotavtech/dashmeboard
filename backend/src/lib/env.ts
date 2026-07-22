@@ -1,4 +1,5 @@
 import "dotenv/config";
+import crypto from "node:crypto";
 import { z } from "zod";
 
 const emptyToUndefined = (value: unknown) => (value === "" ? undefined : value);
@@ -25,11 +26,12 @@ const schema = z.object({
   // string, so empty must behave the same as unset.
   OPENAI_API_KEY: z.preprocess(emptyToUndefined, z.string().min(1).optional()),
   OPENAI_MODEL: z.preprocess(emptyToUndefined, z.string().min(1).default("gpt-4o")),
-  // Auth (ADR-001). JWT_SECRET has a dev fallback but production must set it —
-  // enforced below, not in the schema, so tests and local boots stay simple.
+  // Auth (ADR-001). Production must set JWT_SECRET (enforced below). Dev/test
+  // fall back to a per-process random secret: access tokens die on restart,
+  // but the refresh cookie re-issues them transparently, so local UX is fine.
   JWT_SECRET: z.preprocess(
     emptyToUndefined,
-    z.string().min(32).default("dev-only-secret-change-me-0123456789abcdef"),
+    z.string().min(32).default(crypto.randomBytes(32).toString("hex")),
   ),
   ACCESS_TOKEN_TTL_MIN: z.preprocess(emptyToUndefined, z.coerce.number().int().positive().default(15)),
   REFRESH_TOKEN_TTL_DAYS: z.preprocess(emptyToUndefined, z.coerce.number().int().positive().default(30)),
@@ -41,10 +43,7 @@ if (!parsed.success) {
   process.exit(1);
 }
 
-if (
-  parsed.data.NODE_ENV === "production" &&
-  parsed.data.JWT_SECRET === "dev-only-secret-change-me-0123456789abcdef"
-) {
+if (parsed.data.NODE_ENV === "production" && !process.env.JWT_SECRET?.trim()) {
   console.error("[env] JWT_SECRET must be set in production");
   process.exit(1);
 }

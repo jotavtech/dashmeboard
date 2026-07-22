@@ -81,11 +81,11 @@ describe("login and me", () => {
 
     const wrongPass = await request(app)
       .post("/api/auth/login")
-      .send({ email, password: "senha-errada-123" })
+      .send({ email, password: `${TEST_PASSWORD}-wrong` })
       .expect(401);
     const wrongUser = await request(app)
       .post("/api/auth/login")
-      .send({ email: "ghost@dashme.io", password: "senha-errada-123" })
+      .send({ email: "ghost@dashme.io", password: `${TEST_PASSWORD}-wrong` })
       .expect(401);
 
     expect(wrongPass.body.message).toBe(wrongUser.body.message);

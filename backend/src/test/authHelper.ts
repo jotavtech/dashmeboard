@@ -1,8 +1,10 @@
+import crypto from "node:crypto";
 import request from "supertest";
 import type { Express } from "express";
 import { prisma } from "../lib/prisma.js";
 
-export const TEST_PASSWORD = "s3nha-forte!";
+// Random per test run — never a real credential (keeps secret scanners quiet).
+export const TEST_PASSWORD = `Tt1!${crypto.randomBytes(9).toString("base64url")}`;
 
 /** Wipes every table touched by auth + legacy suites, FK-safe order. */
 export async function resetAllData() {

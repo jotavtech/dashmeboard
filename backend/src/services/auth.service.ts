@@ -1,3 +1,4 @@
+import crypto from "node:crypto";
 import bcrypt from "bcryptjs";
 import { MembershipStatus, OrgStatus, RoleKey, UserStatus } from "@prisma/client";
 import { prisma } from "../lib/prisma.js";
@@ -35,7 +36,7 @@ async function uniqueSlug(name: string): Promise<string> {
   const base = slugify(name);
   const existing = await prisma.organization.findUnique({ where: { slug: base } });
   if (!existing) return base;
-  return `${base}-${Math.random().toString(36).slice(2, 7)}`;
+  return `${base}-${crypto.randomBytes(3).toString("hex")}`;
 }
 
 /** Picks the active org for a user (single-org UX for now: earliest membership). */
