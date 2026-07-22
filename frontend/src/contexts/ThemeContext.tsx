@@ -21,12 +21,11 @@ const STORAGE_KEY = "dashmeboard:theme";
 const ThemeContext = createContext<ThemeContextValue | null>(null);
 
 function readInitial(): Theme {
-  if (typeof window === "undefined") return "dark";
+  if (typeof window === "undefined") return "light";
   const stored = window.localStorage.getItem(STORAGE_KEY);
   if (stored === "dark" || stored === "light") return stored;
-  return window.matchMedia("(prefers-color-scheme: light)").matches
-    ? "light"
-    : "dark";
+  // Light is the product default (ADR-002 §2); dark stays as a preference.
+  return "light";
 }
 
 function applyTheme(theme: Theme) {
