@@ -18,8 +18,10 @@ services:
 
   backend:
     build:
-      context: .
-      dockerfile: backend/Dockerfile
+      # The backend image expects its own directory as build context
+      # (Railway Root Directory = backend) — keep the two in sync.
+      context: ./backend
+      dockerfile: Dockerfile
     restart: unless-stopped
     depends_on:
       postgres:
