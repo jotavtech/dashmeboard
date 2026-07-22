@@ -4,6 +4,16 @@
 > implementação e revisões derivam deste documento — nunca o contradizem.
 > Registrado em 2026-07-16.
 
+> **Emendas de 2026-07-22** (detalhes em [`adr/ADR-002-product-shell.md`](adr/ADR-002-product-shell.md)):
+> 1. Navegação por resultado — sidebar fixa `Hoje · Clientes · Vendas · Financeiro ·
+>    Agenda · Tarefas · Relatórios`; IA vira superfície transversal (substitui o §8 onde conflitar).
+> 2. **Tema claro passa a ser o default do produto** (emenda ao §23.4); escuro permanece
+>    como preferência e asset de demo.
+> 3. Segmentação por template de onboarding + labels renomeáveis por organização (realiza
+>    o §6.7/§22 sem lógica hardcoded por nicho).
+> 4. Comunicação modelada como inbox multicanal; WhatsApp é o primeiro canal (§16).
+> 5. Autenticação definida em [`adr/ADR-001-authentication.md`](adr/ADR-001-authentication.md).
+
 ## 1. Visão geral do produto
 
 ### 1.1 Nome do produto
