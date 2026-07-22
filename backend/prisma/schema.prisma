@@ -44,10 +44,582 @@ model User {
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
 
-  projects  Project[] @relation("ProjectOwner")
-  tasks     Task[]    @relation("TaskAssignee")
+  // V2 Business OS — identidade (expand; ver docs/DATA_MODEL.md §5.1)
+  passwordHash String?    @map("password_hash")
+  authSubject  String?    @map("auth_subject")
+  authIssuer   String?    @map("auth_issuer")
+  status       UserStatus @default(ACTIVE)
+  avatarUrl    String?    @map("avatar_url")
+  lastLoginAt  DateTime?  @map("last_login_at")
 
+  projects      Project[]      @relation("ProjectOwner")
+  tasks         Task[]         @relation("TaskAssignee")
+  memberships   Membership[]
+  refreshTokens RefreshToken[]
+
+  @@unique([authIssuer, authSubject])
   @@map("users")
+}
+
+// Sessões de refresh (ADR-001): valor opaco no cliente, somente SHA-256 aqui.
+// Rotation encadeada via replacedById; reuso de token revogado derruba a cadeia.
+model RefreshToken {
+  id           String    @id @default(uuid())
+  userId       String    @map("user_id")
+  user         User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tokenHash    String    @unique @map("token_hash")
+  expiresAt    DateTime  @map("expires_at")
+  revokedAt    DateTime? @map("revoked_at")
+  replacedById String?   @map("replaced_by_id")
+  userAgent    String?   @map("user_agent")
+  ip           String?
+  createdAt    DateTime  @default(now()) @map("created_at")
+
+  @@index([userId, revokedAt])
+  @@map("refresh_tokens")
+}
+
+// ─────────────────────────────────────────────────────────────
+// V2 Business OS — identidade, tenancy e RBAC
+// ─────────────────────────────────────────────────────────────
+
+enum UserStatus {
+  ACTIVE
+  BLOCKED
+  DELETED
+}
+
+enum OrgStatus {
+  ACTIVE
+  SUSPENDED
+  DELETED
+}
+
+enum RoleKey {
+  OWNER
+  ADMIN
+  MANAGER
+  SALES
+  FINANCE
+  ATTENDANT
+  OPERATIONAL
+  VIEWER
+}
+
+enum MembershipStatus {
+  INVITED
+  ACTIVE
+  SUSPENDED
+  REVOKED
+}
+
+enum InvitationStatus {
+  PENDING
+  ACCEPTED
+  REVOKED
+  EXPIRED
+}
+
+model Organization {
+  id          String    @id @default(uuid())
+  name        String
+  slug        String    @unique
+  segment     String?
+  sizeRange   String?   @map("size_range")
+  phone       String?
+  countryCode String    @default("BR") @map("country_code")
+  currency    String    @default("BRL")
+  locale      String    @default("pt-BR")
+  timezone    String    @default("America/Sao_Paulo")
+  status      OrgStatus @default(ACTIVE)
+  planCode    String    @default("ESSENTIAL") @map("plan_code")
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+  deletedAt   DateTime? @map("deleted_at")
+
+  memberships         Membership[]
+  invitations         Invitation[]
+  customers           Customer[]
+  pipelines           Pipeline[]
+  opportunities       Opportunity[]
+  businessTasks       BusinessTask[]
+  calendarEvents      CalendarEvent[]
+  financialCategories FinancialCategory[]
+  financialEntries    FinancialEntry[]
+  payments            Payment[]
+  activityEvents      ActivityEvent[]
+  auditLogs           AuditLog[]
+
+  @@map("organizations")
+}
+
+model Membership {
+  id             String           @id @default(uuid())
+  organizationId String           @map("organization_id")
+  organization   Organization     @relation(fields: [organizationId], references: [id])
+  userId         String           @map("user_id")
+  user           User             @relation(fields: [userId], references: [id])
+  roleKey        RoleKey          @map("role_key")
+  status         MembershipStatus @default(ACTIVE)
+  invitedById    String?          @map("invited_by_id")
+  acceptedAt     DateTime?        @map("accepted_at")
+  lastAccessAt   DateTime?        @map("last_access_at")
+  createdAt      DateTime         @default(now()) @map("created_at")
+  updatedAt      DateTime         @updatedAt @map("updated_at")
+
+  @@unique([organizationId, userId])
+  @@index([userId, status])
+  @@map("memberships")
+}
+
+model Invitation {
+  id             String           @id @default(uuid())
+  organizationId String           @map("organization_id")
+  organization   Organization     @relation(fields: [organizationId], references: [id])
+  email          String
+  roleKey        RoleKey          @map("role_key")
+  tokenHash      String           @unique @map("token_hash")
+  status         InvitationStatus @default(PENDING)
+  invitedById    String           @map("invited_by_id")
+  expiresAt      DateTime         @map("expires_at")
+  acceptedAt     DateTime?        @map("accepted_at")
+  createdAt      DateTime         @default(now()) @map("created_at")
+
+  @@index([organizationId, status])
+  @@map("invitations")
+}
+
+// ─────────────────────────────────────────────────────────────
+// V2 Business OS — CRM
+// ─────────────────────────────────────────────────────────────
+
+enum CustomerType {
+  PERSON
+  COMPANY
+}
+
+enum CustomerStatus {
+  LEAD
+  ACTIVE
+  INACTIVE
+  BLOCKED
+  ARCHIVED
+}
+
+model Customer {
+  id                String         @id @default(uuid())
+  organizationId    String         @map("organization_id")
+  organization      Organization   @relation(fields: [organizationId], references: [id])
+  type              CustomerType   @default(PERSON)
+  name              String
+  companyName       String?        @map("company_name")
+  taxId             String?        @map("tax_id")
+  email             String?
+  phone             String?
+  whatsapp          String?
+  source            String?
+  category          String?
+  status            CustomerStatus @default(LEAD)
+  ownerMembershipId String?        @map("owner_membership_id")
+  notes             String?        @db.Text
+  tags              String[]       @default([])
+  lastInteractionAt DateTime?      @map("last_interaction_at")
+  nextActionAt      DateTime?      @map("next_action_at")
+  createdById       String         @map("created_by_id")
+  createdAt         DateTime       @default(now()) @map("created_at")
+  updatedAt         DateTime       @updatedAt @map("updated_at")
+  deletedAt         DateTime?      @map("deleted_at")
+  version           Int            @default(1)
+
+  opportunities    Opportunity[]
+  businessTasks    BusinessTask[]
+  calendarEvents   CalendarEvent[]
+  financialEntries FinancialEntry[]
+
+  @@index([organizationId, status, updatedAt])
+  @@index([organizationId, name])
+  @@index([organizationId, nextActionAt])
+  @@map("customers")
+}
+
+// ─────────────────────────────────────────────────────────────
+// V2 Business OS — comercial
+// ─────────────────────────────────────────────────────────────
+
+enum StageKind {
+  OPEN
+  WON
+  LOST
+}
+
+enum OpportunityStatus {
+  OPEN
+  WON
+  LOST
+}
+
+model Pipeline {
+  id             String       @id @default(uuid())
+  organizationId String       @map("organization_id")
+  organization   Organization @relation(fields: [organizationId], references: [id])
+  name           String
+  isDefault      Boolean      @default(false) @map("is_default")
+  active         Boolean      @default(true)
+  createdAt      DateTime     @default(now()) @map("created_at")
+  updatedAt      DateTime     @updatedAt @map("updated_at")
+
+  stages        PipelineStage[]
+  opportunities Opportunity[]
+
+  @@index([organizationId, active])
+  @@map("pipelines")
+}
+
+model PipelineStage {
+  id                 String    @id @default(uuid())
+  organizationId     String    @map("organization_id")
+  pipelineId         String    @map("pipeline_id")
+  pipeline           Pipeline  @relation(fields: [pipelineId], references: [id])
+  name               String
+  position           Int
+  kind               StageKind @default(OPEN)
+  staleAfterDays     Int?      @map("stale_after_days")
+  probabilityDefault Int?      @map("probability_default")
+
+  opportunities Opportunity[]
+
+  @@index([pipelineId, position])
+  @@map("pipeline_stages")
+}
+
+model Opportunity {
+  id                String            @id @default(uuid())
+  organizationId    String            @map("organization_id")
+  organization      Organization      @relation(fields: [organizationId], references: [id])
+  customerId        String            @map("customer_id")
+  customer          Customer          @relation(fields: [customerId], references: [id])
+  pipelineId        String            @map("pipeline_id")
+  pipeline          Pipeline          @relation(fields: [pipelineId], references: [id])
+  stageId           String            @map("stage_id")
+  stage             PipelineStage     @relation(fields: [stageId], references: [id])
+  title             String
+  productOrService  String?           @map("product_or_service")
+  estimatedValue    Decimal           @default(0) @map("estimated_value") @db.Decimal(19, 4)
+  currency          String            @default("BRL")
+  probability       Int               @default(50)
+  ownerMembershipId String?           @map("owner_membership_id")
+  expectedCloseDate DateTime?         @map("expected_close_date")
+  nextAction        String?           @map("next_action")
+  nextActionAt      DateTime?         @map("next_action_at")
+  lastActivityAt    DateTime          @default(now()) @map("last_activity_at")
+  status            OpportunityStatus @default(OPEN)
+  wonAt             DateTime?         @map("won_at")
+  lostAt            DateTime?         @map("lost_at")
+  lostReason        String?           @map("lost_reason")
+  position          Int               @default(0)
+  createdById       String            @map("created_by_id")
+  createdAt         DateTime          @default(now()) @map("created_at")
+  updatedAt         DateTime          @updatedAt @map("updated_at")
+  version           Int               @default(1)
+
+  stageHistory OpportunityStageHistory[]
+  tasks        BusinessTask[]
+
+  @@index([organizationId, stageId, position])
+  @@index([organizationId, status, lastActivityAt])
+  @@index([organizationId, customerId])
+  @@map("opportunities")
+}
+
+model OpportunityStageHistory {
+  id             String      @id @default(uuid())
+  organizationId String      @map("organization_id")
+  opportunityId  String      @map("opportunity_id")
+  opportunity    Opportunity @relation(fields: [opportunityId], references: [id], onDelete: Cascade)
+  fromStageId    String?     @map("from_stage_id")
+  toStageId      String      @map("to_stage_id")
+  actorUserId    String      @map("actor_user_id")
+  reason         String?
+  createdAt      DateTime    @default(now()) @map("created_at")
+
+  @@index([opportunityId, createdAt])
+  @@map("opportunity_stage_history")
+}
+
+// ─────────────────────────────────────────────────────────────
+// V2 Business OS — tarefas e agenda de negócio
+// ─────────────────────────────────────────────────────────────
+
+enum BizTaskStatus {
+  PENDING
+  IN_PROGRESS
+  WAITING
+  DONE
+  CANCELED
+}
+
+enum TaskPriority {
+  LOW
+  MEDIUM
+  HIGH
+  URGENT
+}
+
+model BusinessTask {
+  id                   String        @id @default(uuid())
+  organizationId       String        @map("organization_id")
+  organization         Organization  @relation(fields: [organizationId], references: [id])
+  title                String
+  description          String?       @db.Text
+  status               BizTaskStatus @default(PENDING)
+  priority             TaskPriority  @default(MEDIUM)
+  assigneeMembershipId String?       @map("assignee_membership_id")
+  createdById          String        @map("created_by_id")
+  customerId           String?       @map("customer_id")
+  customer             Customer?     @relation(fields: [customerId], references: [id])
+  opportunityId        String?       @map("opportunity_id")
+  opportunity          Opportunity?  @relation(fields: [opportunityId], references: [id])
+  dueAt                DateTime?     @map("due_at")
+  completedAt          DateTime?     @map("completed_at")
+  position             Int           @default(0)
+  createdAt            DateTime      @default(now()) @map("created_at")
+  updatedAt            DateTime      @updatedAt @map("updated_at")
+  deletedAt            DateTime?     @map("deleted_at")
+  version              Int           @default(1)
+
+  @@index([organizationId, status, dueAt])
+  @@index([organizationId, assigneeMembershipId, status])
+  @@index([organizationId, customerId])
+  @@map("business_tasks")
+}
+
+enum EventType {
+  MEETING
+  SERVICE
+  FOLLOW_UP
+  DUE_DATE
+  VISIT
+  DELIVERY
+  INTERNAL_DEADLINE
+  OTHER
+}
+
+enum EventStatus {
+  SCHEDULED
+  DONE
+  CANCELED
+}
+
+model CalendarEvent {
+  id                String       @id @default(uuid())
+  organizationId    String       @map("organization_id")
+  organization      Organization @relation(fields: [organizationId], references: [id])
+  type              EventType    @default(MEETING)
+  title             String
+  description       String?
+  startsAt          DateTime     @map("starts_at")
+  endsAt            DateTime     @map("ends_at")
+  timezone          String       @default("America/Sao_Paulo")
+  allDay            Boolean      @default(false) @map("all_day")
+  location          String?
+  customerId        String?      @map("customer_id")
+  customer          Customer?    @relation(fields: [customerId], references: [id])
+  ownerMembershipId String?      @map("owner_membership_id")
+  status            EventStatus  @default(SCHEDULED)
+  createdById       String       @map("created_by_id")
+  createdAt         DateTime     @default(now()) @map("created_at")
+  updatedAt         DateTime     @updatedAt @map("updated_at")
+
+  @@index([organizationId, startsAt])
+  @@map("calendar_events")
+}
+
+// ─────────────────────────────────────────────────────────────
+// V2 Business OS — financeiro
+// ─────────────────────────────────────────────────────────────
+
+enum EntryKind {
+  RECEIVABLE
+  PAYABLE
+}
+
+enum EntryStatus {
+  OPEN
+  PARTIALLY_PAID
+  PAID
+  CANCELED
+}
+
+enum InstallmentStatus {
+  PENDING
+  PARTIALLY_PAID
+  PAID
+  CANCELED
+}
+
+enum PaymentMethod {
+  PIX
+  CASH
+  CARD
+  BOLETO
+  TRANSFER
+  OTHER
+}
+
+model FinancialCategory {
+  id             String       @id @default(uuid())
+  organizationId String       @map("organization_id")
+  organization   Organization @relation(fields: [organizationId], references: [id])
+  kind           EntryKind
+  name           String
+  active         Boolean      @default(true)
+
+  entries FinancialEntry[]
+
+  @@unique([organizationId, kind, name])
+  @@map("financial_categories")
+}
+
+model FinancialEntry {
+  id                      String             @id @default(uuid())
+  organizationId          String             @map("organization_id")
+  organization            Organization       @relation(fields: [organizationId], references: [id])
+  kind                    EntryKind
+  customerId              String?            @map("customer_id")
+  customer                Customer?          @relation(fields: [customerId], references: [id])
+  supplierName            String?            @map("supplier_name")
+  description             String
+  categoryId              String?            @map("category_id")
+  category                FinancialCategory? @relation(fields: [categoryId], references: [id])
+  totalAmount             Decimal            @map("total_amount") @db.Decimal(19, 4)
+  currency                String             @default("BRL")
+  issueDate               DateTime           @map("issue_date")
+  status                  EntryStatus        @default(OPEN)
+  notes                   String?
+  responsibleMembershipId String?            @map("responsible_membership_id")
+  createdById             String             @map("created_by_id")
+  canceledAt              DateTime?          @map("canceled_at")
+  cancelReason            String?            @map("cancel_reason")
+  createdAt               DateTime           @default(now()) @map("created_at")
+  updatedAt               DateTime           @updatedAt @map("updated_at")
+  version                 Int                @default(1)
+
+  installments Installment[]
+
+  @@index([organizationId, kind, status])
+  @@index([organizationId, customerId])
+  @@map("financial_entries")
+}
+
+model Installment {
+  id               String              @id @default(uuid())
+  organizationId   String              @map("organization_id")
+  entryId          String              @map("entry_id")
+  entry            FinancialEntry      @relation(fields: [entryId], references: [id], onDelete: Cascade)
+  sequence         Int
+  amount           Decimal             @db.Decimal(19, 4)
+  dueDate          DateTime            @map("due_date")
+  status           InstallmentStatus   @default(PENDING)
+  paidAmount       Decimal             @default(0) @map("paid_amount") @db.Decimal(19, 4)
+  nextCollectionAt DateTime?           @map("next_collection_at")
+  createdAt        DateTime            @default(now()) @map("created_at")
+  updatedAt        DateTime            @updatedAt @map("updated_at")
+
+  allocations        PaymentAllocation[]
+  collectionAttempts CollectionAttempt[]
+
+  @@unique([entryId, sequence])
+  @@index([organizationId, dueDate, status])
+  @@map("installments")
+}
+
+model Payment {
+  id             String        @id @default(uuid())
+  organizationId String        @map("organization_id")
+  organization   Organization  @relation(fields: [organizationId], references: [id])
+  direction      EntryKind
+  amount         Decimal       @db.Decimal(19, 4)
+  currency       String        @default("BRL")
+  paidAt         DateTime      @map("paid_at")
+  method         PaymentMethod @default(PIX)
+  reference      String?
+  recordedById   String        @map("recorded_by_id")
+  reversedAt     DateTime?     @map("reversed_at")
+  reversalReason String?       @map("reversal_reason")
+  createdAt      DateTime      @default(now()) @map("created_at")
+
+  allocations PaymentAllocation[]
+
+  @@index([organizationId, paidAt])
+  @@map("payments")
+}
+
+model PaymentAllocation {
+  id             String      @id @default(uuid())
+  organizationId String      @map("organization_id")
+  paymentId      String      @map("payment_id")
+  payment        Payment     @relation(fields: [paymentId], references: [id])
+  installmentId  String      @map("installment_id")
+  installment    Installment @relation(fields: [installmentId], references: [id])
+  amount         Decimal     @db.Decimal(19, 4)
+  createdAt      DateTime    @default(now()) @map("created_at")
+
+  @@index([organizationId, installmentId])
+  @@map("payment_allocations")
+}
+
+model CollectionAttempt {
+  id             String      @id @default(uuid())
+  organizationId String      @map("organization_id")
+  installmentId  String      @map("installment_id")
+  installment    Installment @relation(fields: [installmentId], references: [id], onDelete: Cascade)
+  channel        String      @default("WHATSAPP")
+  outcome        String?
+  notes          String?
+  attemptedById  String      @map("attempted_by_id")
+  attemptedAt    DateTime    @default(now()) @map("attempted_at")
+  nextAttemptAt  DateTime?   @map("next_attempt_at")
+
+  @@index([organizationId, attemptedAt])
+  @@map("collection_attempts")
+}
+
+// ─────────────────────────────────────────────────────────────
+// V2 Business OS — timeline e auditoria
+// ─────────────────────────────────────────────────────────────
+
+model ActivityEvent {
+  id             String       @id @default(uuid())
+  organizationId String       @map("organization_id")
+  organization   Organization @relation(fields: [organizationId], references: [id])
+  entityType     String       @map("entity_type")
+  entityId       String       @map("entity_id")
+  eventType      String       @map("event_type")
+  actorUserId    String?      @map("actor_user_id")
+  summary        String
+  metadata       Json?
+  occurredAt     DateTime     @default(now()) @map("occurred_at")
+
+  @@index([organizationId, entityType, entityId, occurredAt])
+  @@index([organizationId, occurredAt])
+  @@map("activity_events")
+}
+
+model AuditLog {
+  id             String        @id @default(uuid())
+  organizationId String?       @map("organization_id")
+  organization   Organization? @relation(fields: [organizationId], references: [id])
+  actorUserId    String?       @map("actor_user_id")
+  action         String
+  entityType     String        @map("entity_type")
+  entityId       String?       @map("entity_id")
+  before         Json?
+  after          Json?
+  requestId      String?       @map("request_id")
+  createdAt      DateTime      @default(now()) @map("created_at")
+
+  @@index([organizationId, createdAt])
+  @@map("audit_logs")
 }
 
 model Project {
